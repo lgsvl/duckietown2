@@ -1,0 +1,12 @@
+*~
+*.bag
+*.pyc
+.DS_Store
+.idea
+.project
+.pydevproject
+.settings
+.remote-sync.json
+./caches/
+.ipynb_checkpoints
+.swp
