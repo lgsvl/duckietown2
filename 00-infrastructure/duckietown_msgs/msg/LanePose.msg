@@ -1,4 +1,4 @@
-Header header
+std_msgs/Header header
 float32 d   #lateral offset
 float32 sigma_d
 float32 phi #heading error

@@ -9,4 +9,4 @@
 .remote-sync.json
 ./caches/
 .ipynb_checkpoints
-.swp
+*.swp
