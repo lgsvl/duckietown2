@@ -6,7 +6,7 @@ package_name='adafruit_drivers'
 setup(
     name=package_name,
     version='1.0.0',
-    packages=find_packages('include',exclude=['test']),
+    packages=find_packages('include', exclude=['test']),
     #packages=['Adafruit_ADS1x15', 'Adafruit_GPIO','Adafruit_I2C','Adafruit_LSM303','Adafruit_MotorHAT','Adafruit_PWM_Servo_Driver','Gyro_L3GD20'],
     package_dir={'': 'include'},
     setup_requires=[],

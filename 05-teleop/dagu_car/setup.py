@@ -7,6 +7,7 @@ setup(
     name=package_name,
     version='1.0.0',
     packages=find_packages(exclude=['test']),
+    #package_dir={'': 'dagu_car/dagu_car_include'},
     setup_requires=['numpy'],
     install_requires=['setuptools', 'numpy'],
     author='Brian Shin',
@@ -26,6 +27,7 @@ setup(
     entry_points={
         'console_scripts': [
             'inverse_kinematics_node = dagu_car.inverse_kinematics_node:main',
+            'wheels_driver_node = dagu_car.wheels_driver_node:main'
         ],
     },
 )
