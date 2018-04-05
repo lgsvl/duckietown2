@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     sonar = Sonar_MB1242()
 
-    print 'Range'
+    print('Range')
     while True:
-        print sonar.read()
+        print(sonar.read())
         sleep(1) # Output is fun to watch if this is commented out

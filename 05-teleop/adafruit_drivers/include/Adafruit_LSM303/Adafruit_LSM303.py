@@ -201,7 +201,7 @@ if __name__ == '__main__':
 
     lsm = Adafruit_LSM303()
 
-    print '[(Accelerometer X, Y, Z), (Magnetometer X, Y, Z, orientation)]'
+    print('[(Accelerometer X, Y, Z), (Magnetometer X, Y, Z, orientation)]')
     while True:
-        print lsm.read()
+        print(lsm.read())
         sleep(1) # Output is fun to watch if this is commented out

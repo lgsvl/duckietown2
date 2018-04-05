@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
     gyro = Gyro_L3GD20()
 
-    print '[(Gyro w_X, w_Y, w_Z)]'
+    print('[(Gyro w_X, w_Y, w_Z)]')
     while True:
-        print gyro.read()
+        print(gyro.read())
         sleep(1) # Output is fun to watch if this is commented out
