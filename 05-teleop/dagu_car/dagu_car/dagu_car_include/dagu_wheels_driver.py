@@ -20,7 +20,8 @@ class DaguWheelsDriver:
     # AXEL_TO_RADIUS_RATIO = 1.0     # The axel length and turning radius ratio
     SPEED_TOLERANCE = 1.e-2       # speed tolerance level
 
-    def __init__(self, verbose=False, debug=False, left_flip=False, right_flip=False):
+    def __init__(self, verbose=True, debug=True, left_flip=False, right_flip=False):
+
         self.motorhat = Adafruit_MotorHAT(addr=0x60)
         self.leftMotor = self.motorhat.getMotor(1)
         self.rightMotor = self.motorhat.getMotor(2)
@@ -52,8 +53,8 @@ class DaguWheelsDriver:
         pwml = self.PWMvalue(vl, self.LEFT_MOTOR_MIN_PWM, self.LEFT_MOTOR_MAX_PWM)
         pwmr = self.PWMvalue(vr, self.RIGHT_MOTOR_MIN_PWM, self.RIGHT_MOTOR_MAX_PWM)
 
-        if self.debug:
-            print ("v = %5.3f, u = %5.3f, vl = %5.3f, vr = %5.3f, pwml = %3d, pwmr = %3d" % (v, u, vl, vr, pwml, pwmr))
+        #if self.debug:
+            #print ("v = %5.3f, u = %5.3f, vl = %5.3f, vr = %5.3f, pwml = %3d, pwmr = %3d" % (v, u, vl, vr, pwml, pwmr))
 
         if fabs(vl) < self.SPEED_TOLERANCE:
             leftMotorMode = Adafruit_MotorHAT.RELEASE

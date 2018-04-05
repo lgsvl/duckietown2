@@ -99,7 +99,7 @@ class JoyMapper(Node):
         elif (joy_msg.buttons[5] == 1): # Right back button
             self.state_verbose ^= True
             self.get_logger().info('state_verbose = %s' % self.state_verbose)
-            rospy.set_param('line_detector_node/verbose', self.state_verbose) # bad - should be published for all to hear - not set a specific param
+            #rospy.set_param('line_detector_node/verbose', self.state_verbose) # bad - should be published for all to hear - not set a specific param
         elif (joy_msg.buttons[4] == 1): #Left back button
             self.state_parallel_autonomy ^= True
             self.get_logger().info('state_parallel_autonomy = %s' % self.state_parallel_autonomy)
