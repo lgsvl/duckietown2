@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>pi_camera</name>
+  <version>1.0.0</version>
+  <description>Camera package for duckietown2.</description>
+  <maintainer email="brian.shin@lge.com">Brian Shin</maintainer>
+  
+  <license>GPLv3</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>duckietown_msgs</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
