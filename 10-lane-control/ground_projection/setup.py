@@ -9,9 +9,9 @@ setup(
     packages=find_packages(exclude=['test']),
     #package_dir={'': 'dagu_car/dagu_car_include'},
     #setup_requires=['numpy'],
-    #data_files=[
-    #    ('include/' + package_name, ['line_detector/config/default.yaml'])
-    #],
+    data_files=[
+        ('include/' + package_name, ['ground_projection/config/birdbot0.yaml'])
+    ],
     install_requires=['setuptools', 'numpy', 'opencv-python'],
     author='Brian Shin',
     author_email='brian.shin@lge.com',

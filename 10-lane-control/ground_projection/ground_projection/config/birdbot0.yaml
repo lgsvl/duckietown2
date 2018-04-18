@@ -1,0 +1,23 @@
+camera_matrix:
+  cols: 3
+  data: [338.0195154379331, 0.0, 326.6243350997779, 0.0, 337.54258529070705, 247.81891201233742,
+    0.0, 0.0, 1.0]
+  rows: 3
+camera_name: birdbot0/camera_node
+distortion_coefficients:
+  cols: 5
+  data: [-0.3090312353424267, 0.08109517476973802, 0.0011523288408311185, -0.0008156410762496387,
+    0.0]
+  rows: 1
+distortion_model: plumb_bob
+image_height: 480
+image_width: 640
+projection_matrix:
+  cols: 4
+  data: [248.81048583984375, 0.0, 325.06388942623744, 0.0, 0.0, 273.125244140625,
+    253.2918563373678, 0.0, 0.0, 0.0, 1.0, 0.0]
+  rows: 3
+rectification_matrix:
+  cols: 3
+  data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+  rows: 3

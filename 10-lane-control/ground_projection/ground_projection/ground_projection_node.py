@@ -21,12 +21,12 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 
-from ground_projection.srv import EstimateHomography, GetGroundCoord, GetImageCoord
+#from ground_projection_srv import EstimateHomography, GetGroundCoord, GetImageCoord
 from duckietown_msgs.msg import Pixel, Vector2D, Segment, SegmentList
 from sensor_msgs.msg import Image,CameraInfo
 from cv_bridge import CvBridge
 import numpy as np
-from ground_projection_include.GroundProjection import GroundProjection
+from ground_projection.ground_projection_include.GroundProjection import GroundProjection
 
 
 class GroundProjectionNode(Node):
@@ -42,8 +42,12 @@ class GroundProjectionNode(Node):
 
         camera_info_topic = "camera_info"
         self.loginfo("camera info topic is " + camera_info_topic)
-        self.loginfo("waiting for camera info")
-        
+        #self.loginfo("waiting for camera info")
+
+        filepath = "/home/brian/ros2_ws/install/include/ground_projection/birdbot0.yaml"
+        camera_info = self.load_camera_info(filepath)
+        self.gp.initialize_pinhole_camera_model(camera_info)
+
         #self.gp.initialize_pinhole_camera_model(camera_info)
 
         self.gp.robot_name = self.robot_name
@@ -57,14 +61,14 @@ class GroundProjectionNode(Node):
 
         # skip services that retrieve parameters for now
 
-
-
+    """
     def rectifyImage(self, img_msg):
         try:
             cv_image = self.bridge.imgmsg_to_cv2(img_msg,desired_encoding="mono8")
         except CvBridgeError as e:
             print("Could not convert to CV image ({0})".format(e))
         return gp.rectify(cv_image)
+    """
 
     def lineseglist_cb(self, seglist_msg):
         seglist_out = SegmentList()
@@ -78,6 +82,29 @@ class GroundProjectionNode(Node):
             seglist_out.segments.append(new_segment)
         self.pub_lineseglist_.publish(seglist_out)
 
+    def loginfo(self, s):
+        self.get_logger().info('[%s %s]' % (self.node_name, s))
+
+    def load_camera_info(self, filename):
+        import yaml
+        try:
+            f = open(filename, 'r')
+        except IOError as err:
+            print("Could not open file, IO Error({0})".format(err))
+            return
+
+        calib_data = yaml.safe_load(f)
+        cam_info = CameraInfo()
+
+        # in ROS2 all the cameraInfo attributes are lower case
+        cam_info.width = calib_data['image_width']
+        cam_info.height = calib_data['image_height']
+        cam_info.k = calib_data['camera_matrix']['data']
+        cam_info.d = calib_data['distortion_coefficients']['data']
+        cam_info.r = calib_data['rectification_matrix']['data']
+        cam_info.p = calib_data['projection_matrix']['data']
+        cam_info.distortion_model = calib_data['distortion_model']
+        return cam_info
 
 
 def main(args=None):

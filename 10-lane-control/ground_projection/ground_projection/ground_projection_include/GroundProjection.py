@@ -6,17 +6,18 @@ import rclpy
 
 from sensor_msgs.msg import CameraInfo
 from geometry_msgs.msg import Point
-
 from duckietown_msgs.msg import (Pixel, Vector2D)
-from image_geometry import PinholeCameraModel
-from duckietown_utils.path_utils import get_ros_package_path
-from duckietown_utils.yaml_wrap import (yaml_load_file, yaml_write_to_file)
 
-from duckietown_utils import (logger, get_duckiefleet_root)
+from image_geometry import PinholeCameraModel
+
+#from duckietown_utils.path_utils import get_ros_package_path
+#from duckietown_utils.yaml_wrap import (yaml_load_file, yaml_write_to_file)
+
+#from duckietown_utils import (logger, get_duckiefleet_root)
 
 class GroundProjection():
 
-    def __init__(self, robot_name="shamrock"):
+    def __init__(self, robot_name="birdbot0"):
 
         # defaults overwritten by param
         self.robot_name = robot_name
@@ -29,7 +30,7 @@ class GroundProjection():
         self.pcm_ = PinholeCameraModel()
 
         # Load checkerboard information
-        self.board_ = self.load_board_info()
+        #self.board_ = self.load_board_info()
 
     # wait until we have recieved the camera info message through ROS and then initialize
     def initialize_pinhole_camera_model(self,camera_info):
@@ -102,6 +103,42 @@ class GroundProjection():
         mapx, mapy = cv2.initUndistortRectifyMap(self.pcm_.K, self.pcm_.D, self.pcm_.R, self.pcm_.P, (self.pcm_.width, self.pcm_.height), cv2.CV_32FC1, mapx, mapy)
         return cv2.remap(cv_image_raw, mapx, mapy, cv2.INTER_CUBIC, cv_image_rectified)
 
+    def load_homography(self):
+        '''Load homography (extrinsic parameters)'''
+        """
+        filename = (get_duckiefleet_root() + "/calibrations/camera_extrinsic/" + self.robot_name + ".yaml")
+        if not os.path.isfile(filename):
+            #logger.warn("no extrinsic calibration parameters for {}, trying default".format(self.robot_name))
+            filename = (get_duckiefleet_root() + "/calibrations/camera_extrinsic/default.yaml")
+            if not os.path.isfile(filename):
+                #logger.error("can't find default either, something's wrong")
+            else:
+                data = yaml_load_file(filename)
+        else:
+            #rospy.loginfo("Using extrinsic calibration of " + self.robot_name)
+            data = yaml_load_file(filename)
+        #logger.info("Loaded homography for {}".format(os.path.basename(filename)))
+        return np.array(data['homography']).reshape((3,3))
+        """
+
+        # hardcorded birdbot0 homography
+        return np.array([[-1.3138222289537473e-05,-0.00016799247320246641, -0.18508764249409215],
+                         [0.0008702503150508597, -1.314730233433855e-06, -0.2779744199471874],
+                         [-7.940529271577331e-05,-0.006045110837995103,1.0]])
+
+"""
+def yaml_load_file(filename):
+    import yaml
+    try:
+        f = open(filename, 'r')
+    except IOError as err:
+        print("Could not open file, IO Error({0})".format(err))
+        return
+    data = yaml.safe_load(f)
+    return data
+"""
+
+"""
     def estimate_homography(self,cv_image):
         '''Estimate ground projection using instrinsic camera calibration parameters'''
         cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
@@ -121,8 +158,8 @@ class GroundProjection():
         #TODO flip checks
         src_pts = []
         for r in range(self.board_['height']):
-        	for c in range(self.board_['width']):
-        		src_pts.append(np.array([r * self.board_['square_size'] , c * self.board_['square_size']] , dtype='float32') + self.board_['offset'])
+            for c in range(self.board_['width']):
+                src_pts.append(np.array([r * self.board_['square_size'] , c * self.board_['square_size']] , dtype='float32') + self.board_['offset'])
         # OpenCV labels corners left-to-right, top-to-bottom
         # We're having a problem with our pattern since it's not rotation-invariant
 
@@ -181,56 +218,4 @@ class GroundProjection():
           }
         logger.info("Loaded checkerboard parameters")
         return target_info
-
-#######################################################
-
-#                   OLD STUFF                         #
-
-#######################################################
-
-    def load_camera_info(self):
-        '''Load camera intrinsics'''
-        filename = (os.environ['DUCKIEFLEET_ROOT'] + "/calibrations/camera_intrinsic/" + self.robot_name + ".yaml")
-        if not os.path.isfile(filename):
-            logger.warn("no intrinsic calibration parameters for {}, trying default".format(self.robot_name))
-            filename = (os.environ['DUCKIEFLEET_ROOT'] + "/calibrations/camera_intrinsic/default.yaml")
-            if not os.path.isfile(filename):
-                logger.error("can't find default either, something's wrong")
-        calib_data = yaml_load_file(filename)
-        #     logger.info(yaml_dump(calib_data))
-        cam_info = CameraInfo()
-        cam_info.width = calib_data['image_width']
-        cam_info.height = calib_data['image_height']
-        cam_info.K = np.array(calib_data['camera_matrix']['data']).reshape((3,3))
-        cam_info.D = np.array(calib_data['distortion_coefficients']['data']).reshape((1,5))
-        cam_info.R = np.array(calib_data['rectification_matrix']['data']).reshape((3,3))
-        cam_info.P = np.array(calib_data['projection_matrix']['data']).reshape((3,4))
-        cam_info.distortion_model = calib_data['distortion_model']
-        logger.info("Loaded camera calibration parameters for {} from {}".format(self.robot_name, os.path.basename(filename)))
-        return cam_info
-
-
-    def _load_homography(self, filename):
-        data = yaml_load_file(filename)
-        return np.array(data['homography']).reshape((3,3))
-
-    def _load_camera_info(self, filename):
-        calib_data = yaml_load_file(filename)
-        #     logger.info(yaml_dump(calib_data))
-        cam_info = CameraInfo()
-        cam_info.width = calib_data['image_width']
-        cam_info.height = calib_data['image_height']
-        cam_info.K = np.array(calib_data['camera_matrix']['data']).reshape((3,3))
-        cam_info.D = np.array(calib_data['distortion_coefficients']['data']).reshape((1,5))
-        cam_info.R = np.array(calib_data['rectification_matrix']['data']).reshape((3,3))
-        cam_info.P = np.array(calib_data['projection_matrix']['data']).reshape((3,4))
-        cam_info.distortion_model = calib_data['distortion_model']
-        return cam_info
-
-    def _rectify(self, cv_image_raw):
-        '''old'''
-        #cv_image_rectified = cvMat()
-        cv_image_rectified = np.zeros(np.shape(cv_image_raw))
-        # TODO: debug PinholeCameraModel()
-        self.pcm_.rectifyImage(cv_image_raw, cv_image_rectified)
-        return cv_image_rectified
+"""
