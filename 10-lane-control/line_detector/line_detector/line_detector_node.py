@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import sys
 import cv2
 import threading
@@ -38,6 +39,8 @@ class LineDetectorNode(Node):
         self.node_name = 'line_detector_node'
         super().__init__(self.node_name)
 
+        self.thread_lock = threading.Lock()
+
         self.bridge = CvBridge()
         self.active = True
 
@@ -53,7 +56,7 @@ class LineDetectorNode(Node):
         self.pub_edge = None
         self.pub_colorSegment = None
         self.detector = None
-        self.verbose = None
+        self.verbose = True
 
         self.detector = None
         self.detector_config = None
@@ -61,14 +64,16 @@ class LineDetectorNode(Node):
         self.pub_lines = self.create_publisher(SegmentList, "segment_list")
         self.pub_image = self.create_publisher(Image, "image_with_lines")
 
-        self.sub_image = self.create_subscription(CompressedImage, "image", self.cbImage)
+        self.sub_image = self.create_subscription(CompressedImage, "image/compressed", self.cbImage)
         self.sub_transform = self.create_subscription(AntiInstagramTransform, "transform", self.cbTransform)
         self.sub_switch = self.create_subscription(BoolStamped, "switch", self.cbSwitch)
 
         self.loginfo("[%s] Initialized (verbose = %s)." %(self.node_name, self.verbose))
 
         # NEED to WAIT SOME AMOUNT OF TIME (2secs) before calling updateParams
-        filepath = "/home/brian/ros2_ws/install/include/line_detector/default.yaml"
+        #filepath = "/home/brian/ros2_ws/install/include/line_detector/default.yaml"
+        #filepath = os.path.abspath('include/line_detector/default.yaml')
+        filepath = os.path.abspath(os.path.join(os.getcwd(), 'install/include/line_detector/default.yaml'))
         self.loadConfig(filepath)
         self.updateParams(None)
 
@@ -114,9 +119,9 @@ class LineDetectorNode(Node):
         # self.stats.received()
         if not self.active:
             return
-        
-        thread = threading.Thread(target=self.processImage,args=(image_msg,), daemon=True)
-        thread.start()
+        self.processImage(image_msg)
+        #thread = threading.Thread(target=self.processImage,args=(image_msg,), daemon=True)
+        #thread.start()
         # Returns rightaway
         
     def cbTransform(self, transform_msg):
@@ -137,14 +142,14 @@ class LineDetectorNode(Node):
         self.loginfo('%3d:%s' % (self.intermittent_counter, s))
 
     def processImage(self, image_msg):
-        if not self.thread_lock.acquire(False):
+        #if not self.thread_lock.acquire(False):
             #self.stats.skipped()
-            return
+        #    return
 
-        try:
-            self.processImage_(image_msg)
-        finally:
-            self.thread_lock.release()
+        #try:
+        self.processImage_(image_msg)
+        #finally:
+        #    self.thread_lock.release()
 
     def processImage_(self, image_msg):
         # self.stats.processed()
@@ -155,7 +160,7 @@ class LineDetectorNode(Node):
         self.intermittent_counter += 1
 
         try:
-            image_cv = image_cv_from_jpg(image_msg.data)
+            image_cv = image_cv_from_jpg(bytes(image_msg.data))
         except ValueError as e:
             self.loginfo('Could not decode image: %s' % e)
             return
@@ -170,8 +175,9 @@ class LineDetectorNode(Node):
         image_cv = image_cv[self.top_cutoff:,:,:]
 
         #tk.completed('resized')
-        image_cv_corr = self.ai.applyTransform(image_cv)
-        image_cv_corr = cv2.convertScaleAbs(image_cv_corr)
+        #image_cv_corr = self.ai.applyTransform(image_cv)
+        #image_cv_corr = cv2.convertScaleAbs(image_cv_corr)
+        image_cv_corr = cv2.convertScaleAbs(image_cv)
 
         # Set the image to be detected
         self.detector.setImage(image_cv_corr)
@@ -179,6 +185,10 @@ class LineDetectorNode(Node):
         white = self.detector.detectLines('white')
         yellow = self.detector.detectLines('yellow')
         red = self.detector.detectLines('red')
+
+        white = white[0]
+        yellow = yellow[0]
+        red = red[0]
 
         # tk.completed('detected')
 
@@ -205,6 +215,7 @@ class LineDetectorNode(Node):
         #tk.completed('prepared')
         # Publish segmentList
         self.pub_lines.publish(segmentList)
+        self.loginfo("published line segments")
         #tk.completed('--pub_lines--')
 
         if self.verbose:

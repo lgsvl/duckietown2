@@ -12,7 +12,7 @@ setup(
     data_files=[
         ('include/' + package_name, ['line_detector/config/default.yaml'])
     ],
-    install_requires=['setuptools', 'numpy', 'opencv-python'],
+    install_requires=['setuptools', 'numpy'],
     author='Brian Shin',
     author_email='brian.shin@lge.com',
     maintainer='Brian Shin',

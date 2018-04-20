@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import sys
 import cv2
 import threading
@@ -44,7 +45,8 @@ class GroundProjectionNode(Node):
         self.loginfo("camera info topic is " + camera_info_topic)
         #self.loginfo("waiting for camera info")
 
-        filepath = "/home/brian/ros2_ws/install/include/ground_projection/birdbot0.yaml"
+        #filepath = "/home/brian/ros2_ws/install/include/ground_projection/birdbot0.yaml"
+        filepath = os.path.abspath(os.path.join(os.getcwd(), 'install/include/ground_projection/birdbot0.yaml'))
         camera_info = self.load_camera_info(filepath)
         self.gp.initialize_pinhole_camera_model(camera_info)
 

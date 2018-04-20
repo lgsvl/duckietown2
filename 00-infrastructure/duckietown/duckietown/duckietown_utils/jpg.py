@@ -10,7 +10,7 @@ def jpg_from_image_cv(image):
 
 def image_cv_from_jpg(data):
     import cv2
-    import numpy as np
+    import numpy as np    
     s = np.fromstring(data, np.uint8)
     image_cv = cv2.imdecode(s, cv2.IMREAD_COLOR)
     if image_cv is None:
