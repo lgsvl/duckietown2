@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>line_detector</name>
+  <name>lane_filter</name>
   <version>1.0.0</version>
-  <description>The line detector package for Duckietown2.</description>
+  <description>The lane filter package for Duckietown2.</description>
   <maintainer email="brian.shin@lge.com">Brian Shin</maintainer>
 
   <license>BSD</license>
@@ -10,14 +10,12 @@
   <url type="website">http://wiki.ros.org/teleop_twist_joy</url>
   <author email="brian.shin@lge.com">Brian Shin</author>
 
-  <depend>rclpy</depend>
-  <depend>duckietown_msgs</depend>
-  <depend>geometry_msgs</depend>
-  <depend>std_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>visualization_msgs</depend>
-
-    
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>duckietown_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

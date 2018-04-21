@@ -1,7 +1,7 @@
 from setuptools import find_packages
 from setuptools import setup
 
-package_name='line_detector'
+package_name='lane_filter'
 
 setup(
     name=package_name,
@@ -10,9 +10,9 @@ setup(
     #package_dir={'': 'dagu_car/dagu_car_include'},
     #setup_requires=['numpy'],
     data_files=[
-        ('include/' + package_name, ['line_detector/config/default.yaml'])
+        ('include/' + package_name, ['lane_filter/config/default.yaml'])
     ],
-    install_requires=['setuptools', 'numpy'],
+    install_requires=['setuptools', 'numpy', 'scipy'],
     author='Brian Shin',
     author_email='brian.shin@lge.com',
     maintainer='Brian Shin',
@@ -24,13 +24,12 @@ setup(
         'Programming Language :: Python',
         'Topic :: Software Development',
     ],
-    description='Port of original duckietown line detector package to ROS2',
+    description='Port of original duckietown lane filter package to ROS2',
     license='Apache License, Version 2.0',
     test_suite='test',
     entry_points={
         'console_scripts': [
-            'line_detector_node = line_detector.line_detector_node:main',
-            'test_node = line_detector.test_node:main'
+            'lane_filter_node = lane_filter.lane_filter_node:main'
         ],
     },
 )

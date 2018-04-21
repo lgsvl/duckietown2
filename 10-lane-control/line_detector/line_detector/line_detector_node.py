@@ -55,7 +55,7 @@ class LineDetectorNode(Node):
         # these will be added if it becomes verbose
         self.pub_edge = None
         self.pub_colorSegment = None
-        self.detector = None
+
         self.verbose = True
 
         self.detector = None
@@ -131,7 +131,7 @@ class LineDetectorNode(Node):
         self.loginfo("AntiInstagram transform received")
 
     def loginfo(self, s):
-        self.get_logger().info('[%s %s]' % (self.node_name, s))
+        self.get_logger().info('%s' % (s))
 
     def intermittent_log_now(self):
         return (self.intermittent_counter % self.intermittent_interval == 1)
