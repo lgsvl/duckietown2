@@ -55,7 +55,7 @@ class InverseKinematicsNode(Node):
         self.srv_set_limit = self.create_service(SetValue, 'set_trim', self.cbSrvSetTrim)   
         #self.srv_save = self.create_service(Empty, 'save_calibration', self.cbSrvSaveCalibration)   
 
-        self.sub_car_cmd = self.create_subscription(Twist2DStamped, 'car_cmd', self.car_cmd_callback)
+        self.sub_car_cmd = self.create_subscription(Twist2DStamped, "car_cmd", self.car_cmd_callback)
 
         self.pub_wheels_cmd = self.create_publisher(WheelsCmdStamped, "wheels_cmd")
 
