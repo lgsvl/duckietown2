@@ -42,8 +42,8 @@ class GroundProjection():
         pixel = Pixel()
         cw = self.ci_.width
         ch = self.ci_.height
-        pixel.u = cw * vec.x
-        pixel.v = ch * vec.y
+        pixel.u = int(cw * vec.x)
+        pixel.v = int(ch * vec.y)
         if (pixel.u < 0): pixel.u = 0
         if (pixel.u > cw -1): pixel.u = cw - 1
         if (pixel.v < 0): pixel.v = 0

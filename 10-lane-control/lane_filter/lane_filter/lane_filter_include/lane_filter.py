@@ -87,6 +87,8 @@ class LaneFilterHistogram(Configurable):
             if segment.points[0].x < 0 or segment.points[1].x < 0:
                 continue
             d_i,phi_i,l_i = self.generateVote(segment)
+            #print("d_i: " + str(d_i) + " phi_i: " + str(phi_i))
+
             # if the vote lands outside of the histogram discard it
             if d_i > self.d_max or d_i < self.d_min or phi_i < self.phi_min or phi_i>self.phi_max:
                 continue
@@ -122,7 +124,7 @@ class LaneFilterHistogram(Configurable):
         p2 = np.array([segment.points[1].x, segment.points[1].y])
 
         t_hat = (p2-p1)/np.linalg.norm(p2-p1)
-        t_hat[np.isnan(t_hat) | np.isinf(t_hat)] = 0        
+        #t_hat[np.isnan(t_hat) | np.isinf(t_hat)] = 0        
 
         n_hat = np.array([-t_hat[1],t_hat[0]])
         d1 = np.inner(n_hat,p1)

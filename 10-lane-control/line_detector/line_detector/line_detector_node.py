@@ -61,7 +61,7 @@ class LineDetectorNode(Node):
         self.detector = None
         self.detector_config = None
 
-        self.pub_lines = self.create_publisher(SegmentList, "segment_list")
+        self.pub_lines = self.create_publisher(SegmentList, "segment_list_in")
         self.pub_image = self.create_publisher(Image, "image_with_lines")
 
         self.sub_image = self.create_subscription(CompressedImage, "image/compressed", self.cbImage)
@@ -120,8 +120,8 @@ class LineDetectorNode(Node):
         if not self.active:
             return
         self.processImage(image_msg)
-        #thread = threading.Thread(target=self.processImage,args=(image_msg,), daemon=True)
-        #thread.start()
+        thread = threading.Thread(target=self.processImage,args=(image_msg,), daemon=True)
+        thread.start()
         # Returns rightaway
         
     def cbTransform(self, transform_msg):
@@ -142,14 +142,14 @@ class LineDetectorNode(Node):
         self.loginfo('%3d:%s' % (self.intermittent_counter, s))
 
     def processImage(self, image_msg):
-        #if not self.thread_lock.acquire(False):
+        if not self.thread_lock.acquire(False):
             #self.stats.skipped()
-        #    return
+            return
 
-        #try:
-        self.processImage_(image_msg)
-        #finally:
-        #    self.thread_lock.release()
+        try:
+            self.processImage_(image_msg)
+        finally:
+            self.thread_lock.release()
 
     def processImage_(self, image_msg):
         # self.stats.processed()
@@ -211,7 +211,7 @@ class LineDetectorNode(Node):
         
         self.intermittent_log('# segments: white %3d yellow %3d red %3d' % (len(white.lines),
                 len(yellow.lines), len(red.lines)))
-        
+       
         #tk.completed('prepared')
         # Publish segmentList
         self.pub_lines.publish(segmentList)
@@ -240,8 +240,7 @@ class LineDetectorNode(Node):
         #self.intermittent_log(tk.getall())
 
 
-    def toSegmentMsg(self,  lines, normals, color):
-        
+    def toSegmentMsg(self,lines, normals, color):
         segmentMsgList = []
         for x1,y1,x2,y2,norm_x,norm_y in np.hstack((lines,normals)):
             segment = Segment()

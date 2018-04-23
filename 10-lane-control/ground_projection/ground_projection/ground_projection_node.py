@@ -56,8 +56,8 @@ class GroundProjectionNode(Node):
         #self.gp.rectified_input = get_param(afklajflkajfl)
         self.image_channel_name = "image_raw"
 
-        self.pub_lineseglist_ = self.create_publisher(SegmentList, "lineseglist_out")
-        self.sub_lineseglist_ = self.create_subscription(SegmentList, "lineseglist_in", self.lineseglist_cb)
+        self.pub_lineseglist_ = self.create_publisher(SegmentList, "segment_list_out")
+        self.sub_lineseglist_ = self.create_subscription(SegmentList, "segment_list_in", self.lineseglist_cb)
 
         #self.service_homog_ = self.create_service(EstimateHomography, "estimate_homography", self.estimate_homography_cb)
 

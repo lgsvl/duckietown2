@@ -40,7 +40,7 @@ class LaneFilterNode(Node):
         self.t_last_update = time.time()        # replace later with rclpy get_time()
         self.velocity = Twist2DStamped()
         
-        self.sub = self.create_subscription(SegmentList, "segment_list", self.processSegments)
+        self.sub = self.create_subscription(SegmentList, "segment_list_out", self.processSegments)
         self.sub_switch = self.create_subscription(BoolStamped, "switch", self.cbSwitch)
         self.sub_velocity = self.create_subscription(Twist2DStamped, "car_cmd", self.updateVelocity)
 
@@ -103,7 +103,10 @@ class LaneFilterNode(Node):
         belief_img = self.getDistributionImage(self.filter.belief,segment_list_msg.header.stamp)
         self.pub_lane_pose.publish(lanePose)
         self.pub_belief_img.publish(belief_img)
-        
+
+        self.loginfo("d: " + str(lanePose.d))
+        self.loginfo("phi: " + str(lanePose.phi))        
+
         # also publishing a separate Bool for the FSM
         in_lane_msg = BoolStamped()
         in_lane_msg.header.stamp = segment_list_msg.header.stamp
@@ -118,10 +121,9 @@ class LaneFilterNode(Node):
         
     def updateVelocity(self,twist_msg):
         self.velocity = twist_msg
-    def onShutdown(self):
-        rospy.loginfo("[LaneFilterNode] Shutdown.")
+    
     def loginfo(self, s):
-        rospy.loginfo('%s' % s)
+        self.get_logger().info('%s' % (s))
 
 
 def main(args=None):
