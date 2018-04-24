@@ -37,7 +37,7 @@ class LaneFilterNode(Node):
         self.filter = None
         self.filter_config = None        
 
-        self.t_last_update = time.time()        # replace later with rclpy get_time()
+        self.t_last_update = time.time()        # replace later with rclpy get_time() is available
         self.velocity = Twist2DStamped()
         
         self.sub = self.create_subscription(SegmentList, "segment_list_out", self.processSegments)
@@ -101,6 +101,15 @@ class LaneFilterNode(Node):
     
         # publish the belief image
         belief_img = self.getDistributionImage(self.filter.belief,segment_list_msg.header.stamp)
+
+        current_time_print = time.time()
+        message_time = segment_list_msg.header.stamp.sec + segment_list_msg.header.stamp.nanosec*1e-9
+        delay = current_time_print - message_time
+        print("wheels_cmd timestamp: " + str(segment_list_msg.header.stamp))
+        print("current time: " + str(current_time_print))
+        print("delay: " + str(delay))
+        
+
         self.pub_lane_pose.publish(lanePose)
         self.pub_belief_img.publish(belief_img)
 

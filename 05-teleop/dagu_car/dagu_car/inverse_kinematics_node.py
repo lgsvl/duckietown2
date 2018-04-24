@@ -154,7 +154,14 @@ class InverseKinematicsNode(Node):
         msg_wheels_cmd.vel_right = u_r_limited
         msg_wheels_cmd.vel_left = u_l_limited
         self.pub_wheels_cmd.publish(msg_wheels_cmd)
-
+        
+        current_time = time.time()
+        message_time = msg_wheels_cmd.header.stamp.sec + msg_wheels_cmd.header.stamp.nanosec*1e-9
+        delay = current_time - message_time
+        print("wheels_cmd timestamp: " + str(msg_wheels_cmd.header.stamp))
+        print("current time: " + str(current_time))
+        print("delay: " + str(delay))
+            
 
 def main(args=None):
     if args is None:

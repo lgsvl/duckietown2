@@ -119,7 +119,6 @@ class LineDetectorNode(Node):
         # self.stats.received()
         if not self.active:
             return
-        self.processImage(image_msg)
         thread = threading.Thread(target=self.processImage,args=(image_msg,), daemon=True)
         thread.start()
         # Returns rightaway
@@ -148,6 +147,13 @@ class LineDetectorNode(Node):
 
         try:
             self.processImage_(image_msg)
+            message_time = image_msg.header.stamp.sec + image_msg.header.stamp.nanosec*1e-9
+            current_time = time.time()
+            delay = current_time - message_time
+            print("message time: " + str(message_time))
+            print("current time: " + str(current_time))
+            print("delay: " + str(delay))
+
         finally:
             self.thread_lock.release()
 

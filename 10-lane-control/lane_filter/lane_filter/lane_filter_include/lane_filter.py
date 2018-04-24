@@ -40,6 +40,11 @@ class LaneFilterHistogram(Configurable):
         self.cov_0  = [ [self.sigma_d_0, 0], [0, self.sigma_phi_0] ]
         self.cov_mask = [self.sigma_d_mask, self.sigma_phi_mask]
 
+        #print("d_min: " + str(self.d_min))
+        #print("d_max: " + str(self.d_max))
+        #print("phi_min: " + str(self.phi_min))
+        #print("phi_max: "  + str(self.phi_max))
+
         self.initialize()        
 
     def predict(self, dt, v, w):
@@ -91,7 +96,10 @@ class LaneFilterHistogram(Configurable):
 
             # if the vote lands outside of the histogram discard it
             if d_i > self.d_max or d_i < self.d_min or phi_i < self.phi_min or phi_i>self.phi_max:
+                print("discarding vote")
                 continue
+            else:
+                print("keeping vote")
 
             i = int(floor((d_i - self.d_min)/self.delta_d))
             j = int(floor((phi_i - self.phi_min)/self.delta_phi))
@@ -152,6 +160,7 @@ class LaneFilterHistogram(Configurable):
             else: # right edge of white lane
                 d_i = -d_i
             d_i =  self.lanewidth/2 - d_i
+        
         return d_i, phi_i, l_i
 
     def getSegmentDistance(self, segment):
