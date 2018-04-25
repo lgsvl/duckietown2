@@ -166,7 +166,7 @@ class LineDetectorNode(Node):
         self.intermittent_counter += 1
 
         try:
-            image_cv = image_cv_from_jpg(bytes(image_msg.data))
+            image_cv = image_cv_from_jpg(image_msg.data)
         except ValueError as e:
             self.loginfo('Could not decode image: %s' % e)
             return
@@ -278,3 +278,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+

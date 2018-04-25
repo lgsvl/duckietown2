@@ -85,7 +85,7 @@ class LaneControllerNode(Node):
 
         if math.fabs(cross_track_err) > self.d_thres:
             cross_track_err = cross_track_err / math.fabs(cross_track_err) * self.d_thres
-        car_control_msg.omega =  self.k_d * cross_track_err + self.k_theta * heading_err #*self.steer_gain #Right stick H-axis. Right is negative
+        car_control_msg.omega = self.k_d * cross_track_err + self.k_theta * heading_err #*self.steer_gain #Right stick H-axis. Right is negative
 
         self.publishCmd(car_control_msg)
         

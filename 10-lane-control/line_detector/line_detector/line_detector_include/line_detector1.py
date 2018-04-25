@@ -7,10 +7,6 @@ from .line_detector_interface import (Detections,
                                       LineDetectorInterface)
 import copy
 
-def hsv_color_thresh_i(image_hsv,lowh=0,lows=0,lowv=0, highh=170,highs=255,highv=255):
-    bw=cv2.inRange(image_hsv, np.array([lowh,lows,lowv]), np.array([highh,highs,highv]))
-    return bw
-
 
 class LineDetectorHSV(Configurable, LineDetectorInterface):
     """ LineDetectorHSV """
@@ -44,10 +40,7 @@ class LineDetectorHSV(Configurable, LineDetectorInterface):
         if color == 'white':
             bw = cv2.inRange(self.hsv, self.hsv_white1, self.hsv_white2)
         elif color == 'yellow':
-            self.hsv_yellow1=np.array([25,77,140])
-            self.hsv_yellow2=np.array([69,141,227])
-            hsv = cv2.cvtColor(self.rgb,cv2.COLOR_RGB2HSV)
-            bw = cv2.inRange(hsv, self.hsv_yellow1, self.hsv_yellow2)
+            bw = cv2.inRange(self.hsv, self.hsv_yellow1, self.hsv_yellow2)
         elif color == 'red':
             bw1 = cv2.inRange(self.hsv, self.hsv_red1, self.hsv_red2)
             bw2 = cv2.inRange(self.hsv, self.hsv_red3, self.hsv_red4)
@@ -136,7 +129,6 @@ class LineDetectorHSV(Configurable, LineDetectorInterface):
         return Detections(lines=lines, normals=normals, area=bw, centers=centers), bw
     
     def setImage(self, bgr):
-        self.rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
         self.bgr = np.copy(bgr)
         self.hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
         self.edges = self._findEdge(self.bgr)
