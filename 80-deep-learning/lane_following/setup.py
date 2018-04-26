@@ -8,7 +8,7 @@ setup(
     version='1.0.0',
     packages=['lane_following'],
     package_dir={'lane_following': 'src'},
-    package_data={'lane_following': ['src/host/model/*']},
+    package_data={'lane_following': ['host/model/**/*']},
     install_requires=['setuptools', 'numpy', 'cv_bridge', 'cv2'],
     author='David Uhm',
     author_email='david.uhm@lge.com',
