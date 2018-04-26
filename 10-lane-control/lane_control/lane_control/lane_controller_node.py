@@ -43,12 +43,20 @@ class LaneControllerNode(Node):
         return
 
     def setGains(self):
-        v_bar = 0.5 # nominal speed, 0.5m/s
-        k_theta = -2.0
-        k_d = - (k_theta ** 2) / ( 4.0 * v_bar)
-        theta_thres = math.pi / 6
-        d_thres = math.fabs(k_theta / k_d) * theta_thres
-        d_offset = 0.0
+        #v_bar = 0.5 # nominal speed, 0.5m/s
+        #k_theta = -2.0
+        #k_d = - (k_theta ** 2) / ( 4.0 * v_bar)
+        #theta_thres = math.pi / 6
+        #d_thres = math.fabs(k_theta / k_d) * theta_thres
+        #d_offset = 0.0
+        v_bar = 0.3864
+        #v_bar = 0.2
+        k_d = -10.30
+        k_theta = -5.15
+        theta_thres = 0.523
+        d_thres = 0.2615
+        d_offset = 0.0        
+
         self.v_bar = v_bar # Linear velocity
         self.k_d = k_d # P gain for theta
         self.k_theta = k_theta # P gain for d

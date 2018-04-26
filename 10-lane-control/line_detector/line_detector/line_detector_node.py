@@ -33,6 +33,7 @@ from visualization_msgs.msg import Marker
 from line_detector.line_detector_include.line_detector1 import LineDetectorHSV
 from line_detector.line_detector_include.line_detector_plot import color_segment, drawLines
 
+import pickle
 
 class LineDetectorNode(Node):
     def __init__(self):
@@ -56,7 +57,7 @@ class LineDetectorNode(Node):
         self.pub_edge = None
         self.pub_colorSegment = None
 
-        self.verbose = True
+        self.verbose = False
 
         self.detector = None
         self.detector_config = None
@@ -147,6 +148,7 @@ class LineDetectorNode(Node):
 
         try:
             self.processImage_(image_msg)
+            #image_msg.data = list(open("/dev/shm/a.jpg", "rb").read())
             message_time = image_msg.header.stamp.sec + image_msg.header.stamp.nanosec*1e-9
             current_time = time.time()
             delay = current_time - message_time
@@ -220,6 +222,10 @@ class LineDetectorNode(Node):
        
         #tk.completed('prepared')
         # Publish segmentList
+        #message_time = segmentList.header.stamp.sec + segmentList.header.stamp.nanosec*1e-9
+        #fname = "/dev/shm/segment" + str(message_time)
+        #open(fname, "wb").write(pickle.dumps(segmentList.segments, pickle.HIGHEST_PROTOCOL))
+        #segmentList.segments = []
         self.pub_lines.publish(segmentList)
         self.loginfo("published line segments")
         #tk.completed('--pub_lines--')

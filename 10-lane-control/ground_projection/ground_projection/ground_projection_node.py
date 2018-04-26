@@ -21,6 +21,7 @@ import numpy as np
 
 import rclpy
 from rclpy.node import Node
+import pickle
 
 #from ground_projection_srv import EstimateHomography, GetGroundCoord, GetImageCoord
 from duckietown_msgs.msg import Pixel, Vector2D, Segment, SegmentList
@@ -46,7 +47,7 @@ class GroundProjectionNode(Node):
         #self.loginfo("waiting for camera info")
 
         #filepath = "/home/brian/ros2_ws/install/include/ground_projection/birdbot0.yaml"
-        filepath = os.path.abspath(os.path.join(os.getcwd(), 'install/include/ground_projection/birdbot0.yaml'))
+        filepath = os.path.abspath(os.path.join(os.getcwd(), 'install/include/ground_projection/birdbot5.yaml'))
         camera_info = self.load_camera_info(filepath)
         self.gp.initialize_pinhole_camera_model(camera_info)
 
@@ -63,6 +64,7 @@ class GroundProjectionNode(Node):
 
         # skip services that retrieve parameters for now
 
+
     """
     def rectifyImage(self, img_msg):
         try:
@@ -73,6 +75,16 @@ class GroundProjectionNode(Node):
     """
 
     def lineseglist_cb(self, seglist_msg):
+        message_time = seglist_msg.header.stamp.sec + seglist_msg.header.stamp.nanosec*1e-9
+        #fname = "/dev/shm/segment" + str(message_time) 
+        #seglist_msg.segments = pickle.load(open(fname, "rb"))
+        #os.unlink(fname)
+        current_time = time.time()
+        delay = current_time - message_time
+        print("message time: " + str(message_time))
+        print("current time: " + str(current_time))
+        print("delay: " + str(delay))
+
         seglist_out = SegmentList()
         seglist_out.header = seglist_msg.header
         for received_segment in seglist_msg.segments:

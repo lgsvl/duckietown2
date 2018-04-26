@@ -10,7 +10,7 @@ setup(
     #package_dir={'': 'dagu_car/dagu_car_include'},
     #setup_requires=['numpy'],
     data_files=[
-        ('include/' + package_name, ['ground_projection/config/birdbot0.yaml'])
+        ('include/' + package_name, ['ground_projection/config/birdbot5.yaml'])
     ],
     install_requires=['setuptools', 'numpy'],
     author='Brian Shin',

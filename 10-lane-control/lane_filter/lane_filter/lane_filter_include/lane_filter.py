@@ -40,11 +40,6 @@ class LaneFilterHistogram(Configurable):
         self.cov_0  = [ [self.sigma_d_0, 0], [0, self.sigma_phi_0] ]
         self.cov_mask = [self.sigma_d_mask, self.sigma_phi_mask]
 
-        #print("d_min: " + str(self.d_min))
-        #print("d_max: " + str(self.d_max))
-        #print("phi_min: " + str(self.phi_min))
-        #print("phi_max: "  + str(self.phi_max))
-
         self.initialize()        
 
     def predict(self, dt, v, w):
@@ -150,11 +145,13 @@ class LaneFilterHistogram(Configurable):
             if(p1[0] > p2[0]): # right edge of white lane
                 d_i = d_i - self.linewidth_white
             else: # left edge of white lane
+                print("WHITE, switching d and phi")
                 d_i = - d_i
                 phi_i = -phi_i
             d_i = d_i - self.lanewidth/2
         elif segment.color == segment.YELLOW: # left lane is yellow
             if (p2[0] > p1[0]): # left edge of yellow lane
+                print("YELLOW, switching phi")
                 d_i = d_i - self.linewidth_yellow
                 phi_i = -phi_i
             else: # right edge of white lane

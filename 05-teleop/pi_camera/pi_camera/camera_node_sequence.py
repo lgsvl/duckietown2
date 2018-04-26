@@ -113,7 +113,11 @@ class CameraNode(Node):
             # Generate compressed image
             image_msg = CompressedImage()
             image_msg.format = "jpeg"
+            
             image_msg.data = stream_data
+
+            #image_msg.data = []
+            #open("/dev/shm/a.jpg", "wb").write(bytes(stream_data))
 
             image_msg.header.stamp = timeStamp()
             image_msg.header.frame_id = self.frame_id
