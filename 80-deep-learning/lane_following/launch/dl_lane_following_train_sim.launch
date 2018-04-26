@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+	<node pkg="joy" type="joy_node" name="joy_node" ns="simulator" output="screen" clear_params="true" required="true" />
+	<node pkg="joy_mapper" type="joy_mapper_node_training.py" name="joy_mapper_node" ns="simulator" output="screen" clear_params="true" required="true" />
+	<node pkg="dagu_car" type="inverse_kinematics_node.py" name="inverse_kinematics_node" ns="simulator" output="screen" clear_params="true" required="true">
+		<remap from="inverse_kinematics_node/car_cmd" to="joy_mapper_node/car_cmd" />
+		<remap from="inverse_kinematics_node/wheels_cmd" to="wheels_driver_node/wheels_cmd" />
+	</node>
+	<node pkg="rosbridge_server" type="rosbridge_websocket" name="rosbridge_websocket" output="screen" required="true" />
+	<node pkg="lane_following" type="trainer.py" name="trainer" ns="simulator" output="screen" clear_params="true" required="true" />
+</launch>

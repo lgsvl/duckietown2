@@ -1,0 +1,5 @@
+keras==2.1.5
+h5py==2.7.1
+Pillow==5.1.0
+numpy==1.14.1
+matplotlib==2.1.2

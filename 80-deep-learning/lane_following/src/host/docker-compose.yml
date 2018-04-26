@@ -1,0 +1,48 @@
+version: "2.3"
+
+services:
+  bash:
+    build: .
+    container_name: bash
+    volumes:
+      - ${HOME}/.Xauthority:/root/.Xauthority
+      - ${HOME}/.config/pulse:/root/.config/pulse
+      - ${XDG_RUNTIME_DIR}/pulse/native:/tmp/pulse
+      - .:/notebooks
+    environment:
+      - DISPLAY
+      - LIBOVERLAY_SCROLLBAR=0
+      - PULSE_SERVER=unix:/tmp/pulse
+      - GTK2_RC_FILES=/usr/share/themes/Adwaita/gtk-2.0/gtkrc
+      - GTK_THEME=Adwaita
+      - CUDA_CACHE_PATH=/notebooks/.nv
+    runtime: nvidia
+    entrypoint: /bin/bash
+    stdin_open: true
+    tty: true
+    privileged: true
+    network_mode: host
+
+  jupyter:
+    build: .
+    container_name: jupyter
+    volumes:
+      - ${HOME}/.Xauthority:/root/.Xauthority
+      - ${HOME}/.config/pulse:/root/.config/pulse
+      - ${XDG_RUNTIME_DIR}/pulse/native:/tmp/pulse
+      - .:/notebooks
+    environment:
+      - DISPLAY
+      - LIBOVERLAY_SCROLLBAR=0
+      - PULSE_SERVER=unix:/tmp/pulse
+      - GTK2_RC_FILES=/usr/share/themes/Adwaita/gtk-2.0/gtkrc
+      - GTK_THEME=Adwaita
+      - CUDA_CACHE_PATH=/notebooks/.nv
+    runtime: nvidia
+    stdin_open: true
+    tty: true
+    privileged: true
+    network_mode: host
+    ports:
+     - 8888:8888
+
