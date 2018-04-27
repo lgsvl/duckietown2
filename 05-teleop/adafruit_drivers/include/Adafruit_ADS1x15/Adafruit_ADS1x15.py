@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import time
-import smbus
+import smbus2 as smbus
 from Adafruit_I2C import Adafruit_I2C
 
 # ===========================================================================

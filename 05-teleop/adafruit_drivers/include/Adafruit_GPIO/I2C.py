@@ -22,7 +22,7 @@
 import logging
 import subprocess
 
-import smbus
+import smbus2 as smbus
 
 import Adafruit_GPIO.Platform as Platform
 
