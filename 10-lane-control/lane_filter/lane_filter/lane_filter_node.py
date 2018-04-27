@@ -105,16 +105,13 @@ class LaneFilterNode(Node):
         current_time_print = time.time()
         message_time = segment_list_msg.header.stamp.sec + segment_list_msg.header.stamp.nanosec*1e-9
         delay = current_time_print - message_time
-        print("wheels_cmd timestamp: " + str(segment_list_msg.header.stamp))
-        print("current time: " + str(current_time_print))
+        #print("wheels_cmd timestamp: " + str(segment_list_msg.header.stamp))
+        #print("current time: " + str(current_time_print))
         print("delay: " + str(delay))
         
 
         self.pub_lane_pose.publish(lanePose)
         self.pub_belief_img.publish(belief_img)
-
-        self.loginfo("d: " + str(lanePose.d))
-        self.loginfo("phi: " + str(lanePose.phi))        
 
         # also publishing a separate Bool for the FSM
         in_lane_msg = BoolStamped()

@@ -91,11 +91,7 @@ class LaneFilterHistogram(Configurable):
 
             # if the vote lands outside of the histogram discard it
             if d_i > self.d_max or d_i < self.d_min or phi_i < self.phi_min or phi_i>self.phi_max:
-                print("discarding vote")
                 continue
-            else:
-                print("keeping vote")
-
             i = int(floor((d_i - self.d_min)/self.delta_d))
             j = int(floor((phi_i - self.phi_min)/self.delta_phi))
             measurement_likelihood[i,j] = measurement_likelihood[i,j] +  1 

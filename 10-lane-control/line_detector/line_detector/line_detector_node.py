@@ -33,7 +33,6 @@ from visualization_msgs.msg import Marker
 from line_detector.line_detector_include.line_detector1 import LineDetectorHSV
 from line_detector.line_detector_include.line_detector_plot import color_segment, drawLines
 
-import pickle
 
 class LineDetectorNode(Node):
     def __init__(self):
@@ -152,8 +151,8 @@ class LineDetectorNode(Node):
             message_time = image_msg.header.stamp.sec + image_msg.header.stamp.nanosec*1e-9
             current_time = time.time()
             delay = current_time - message_time
-            print("message time: " + str(message_time))
-            print("current time: " + str(current_time))
+            #print("message time: " + str(message_time))
+            #print("current time: " + str(current_time))
             print("delay: " + str(delay))
 
         finally:
