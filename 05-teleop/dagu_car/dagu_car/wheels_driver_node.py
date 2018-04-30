@@ -72,8 +72,10 @@ def main(args=None):
     rclpy.init(args=args)
 
     node = WheelsDriverNode()
-    rclpy.spin(node)
-
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
     node.destroy_node()
     rclpy.shutdown()
 

@@ -27,6 +27,7 @@ setup(
     entry_points={
         'console_scripts': [
             'lane_controller_node = lane_control.lane_controller_node:main',
+            'lane_following_launch = lane_control.lane_control_launch.lane_following_launch:main'
         ],
     },
 )

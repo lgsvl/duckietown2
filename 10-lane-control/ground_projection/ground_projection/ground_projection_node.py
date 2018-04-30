@@ -21,7 +21,7 @@ import numpy as np
 
 import rclpy
 from rclpy.node import Node
-import pickle
+#import pickle
 
 #from ground_projection_srv import EstimateHomography, GetGroundCoord, GetImageCoord
 from duckietown_msgs.msg import Pixel, Vector2D, Segment, SegmentList
@@ -76,11 +76,13 @@ class GroundProjectionNode(Node):
 
     def lineseglist_cb(self, seglist_msg):
         message_time = seglist_msg.header.stamp.sec + seglist_msg.header.stamp.nanosec*1e-9
+        current_time = time.time()
+        delay = current_time - message_time
+        
         #fname = "/dev/shm/segment" + str(message_time) 
         #seglist_msg.segments = pickle.load(open(fname, "rb"))
         #os.unlink(fname)
-        current_time = time.time()
-        delay = current_time - message_time
+
         #print("message time: " + str(message_time))
         #print("current time: " + str(current_time))
         print("delay: " + str(delay), "# segments: ", len(seglist_msg.segments))
@@ -128,8 +130,10 @@ def main(args=None):
     rclpy.init(args=args)
 
     node = GroundProjectionNode()
-    rclpy.spin(node)
-
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
     node.destroy_node()
     rclpy.shutdown()
 

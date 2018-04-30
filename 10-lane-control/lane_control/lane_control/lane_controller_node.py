@@ -49,8 +49,8 @@ class LaneControllerNode(Node):
         #theta_thres = math.pi / 6
         #d_thres = math.fabs(k_theta / k_d) * theta_thres
         #d_offset = 0.0
-        v_bar = 0.3864
-        #v_bar = 0.2
+        #v_bar = 0.3864
+        v_bar = 0.2
         k_d = -10.30
         k_theta = -5.15
         theta_thres = 0.523
@@ -108,8 +108,11 @@ def main(args=None):
     rclpy.init(args=args)
 
     node = LaneControllerNode()
-    rclpy.spin(node)
-
+    
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
     node.destroy_node()
     rclpy.shutdown()
 

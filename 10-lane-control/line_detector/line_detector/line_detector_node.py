@@ -33,6 +33,7 @@ from visualization_msgs.msg import Marker
 from line_detector.line_detector_include.line_detector1 import LineDetectorHSV
 from line_detector.line_detector_include.line_detector_plot import color_segment, drawLines
 
+#import pickle
 
 class LineDetectorNode(Node):
     def __init__(self):
@@ -221,10 +222,13 @@ class LineDetectorNode(Node):
        
         #tk.completed('prepared')
         # Publish segmentList
+        
+        # FOR TESTING, write to file instead of ros publish
         #message_time = segmentList.header.stamp.sec + segmentList.header.stamp.nanosec*1e-9
         #fname = "/dev/shm/segment" + str(message_time)
         #open(fname, "wb").write(pickle.dumps(segmentList.segments, pickle.HIGHEST_PROTOCOL))
         #segmentList.segments = []
+        
         self.pub_lines.publish(segmentList)
         self.loginfo("published line segments")
         #tk.completed('--pub_lines--')
@@ -275,8 +279,10 @@ def main(args=None):
     rclpy.init(args=args)
 
     node = LineDetectorNode()
-    rclpy.spin(node)
-
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
     node.destroy_node()
     rclpy.shutdown()
 

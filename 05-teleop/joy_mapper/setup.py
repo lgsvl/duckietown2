@@ -7,7 +7,7 @@ setup(
     name=package_name,
     version='1.0.1',
     packages=find_packages(exclude=['test']),
-    install_requires=['setuptools'],
+    install_requires=['launch', 'setuptools'],
     author='Brian Shin',
     author_email='brian.shin@lge.com',
     maintainer='Brian Shin',
@@ -24,7 +24,8 @@ setup(
     test_suite='test',
     entry_points={
         'console_scripts': [
-            'joy_mapper = joy_mapper.joy_mapper_node:main'
+            'joy_mapper_node = joy_mapper.joy_mapper_node:main',
+            'joystick_launch = joy_mapper_launch.joystick_launch:main'
         ],
     },
 )

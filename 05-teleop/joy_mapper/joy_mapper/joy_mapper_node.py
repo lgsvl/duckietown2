@@ -64,8 +64,8 @@ class JoyMapper(Node):
 
     def cbJoy(self, joy_msg):
         self.joy = joy_msg
-        self.get_logger().info('I heard: [%s]' % str(joy_msg.axes))
-        self.get_logger().info('I heard: [%s]' % str(joy_msg.buttons))
+        #self.get_logger().info('I heard: [%s]' % str(joy_msg.axes))
+        #self.get_logger().info('I heard: [%s]' % str(joy_msg.buttons))
         self.publishControl()
         self.processButtons(joy_msg)
             
@@ -138,8 +138,10 @@ def main(args=None):
     rclpy.init(args=args)
 
     node = JoyMapper()
-    rclpy.spin(node)
-
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
     node.destroy_node()
     rclpy.shutdown()
 

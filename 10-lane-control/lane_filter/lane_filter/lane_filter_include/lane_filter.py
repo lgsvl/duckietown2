@@ -141,13 +141,11 @@ class LaneFilterHistogram(Configurable):
             if(p1[0] > p2[0]): # right edge of white lane
                 d_i = d_i - self.linewidth_white
             else: # left edge of white lane
-                print("WHITE, switching d and phi")
                 d_i = - d_i
                 phi_i = -phi_i
             d_i = d_i - self.lanewidth/2
         elif segment.color == segment.YELLOW: # left lane is yellow
             if (p2[0] > p1[0]): # left edge of yellow lane
-                print("YELLOW, switching phi")
                 d_i = d_i - self.linewidth_yellow
                 phi_i = -phi_i
             else: # right edge of white lane
