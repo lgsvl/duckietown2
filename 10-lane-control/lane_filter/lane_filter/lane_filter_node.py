@@ -107,7 +107,7 @@ class LaneFilterNode(Node):
         delay = current_time_print - message_time
         #print("wheels_cmd timestamp: " + str(segment_list_msg.header.stamp))
         #print("current time: " + str(current_time_print))
-        print("delay: " + str(delay))
+        #print("delay: " + str(delay))
         
 
         self.pub_lane_pose.publish(lanePose)

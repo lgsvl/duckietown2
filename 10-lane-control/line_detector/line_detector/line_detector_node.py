@@ -149,12 +149,12 @@ class LineDetectorNode(Node):
         try:
             self.processImage_(image_msg)
             #image_msg.data = list(open("/dev/shm/a.jpg", "rb").read())
-            message_time = image_msg.header.stamp.sec + image_msg.header.stamp.nanosec*1e-9
-            current_time = time.time()
-            delay = current_time - message_time
+            #message_time = image_msg.header.stamp.sec + image_msg.header.stamp.nanosec*1e-9
+            #current_time = time.time()
+            #delay = current_time - message_time
             #print("message time: " + str(message_time))
             #print("current time: " + str(current_time))
-            print("delay: " + str(delay))
+            #print("delay: " + str(delay))
 
         finally:
             self.thread_lock.release()
@@ -230,7 +230,7 @@ class LineDetectorNode(Node):
         #segmentList.segments = []
         
         self.pub_lines.publish(segmentList)
-        self.loginfo("published line segments")
+        #self.loginfo("published line segments")
         #tk.completed('--pub_lines--')
 
         if self.verbose:

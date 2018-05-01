@@ -85,7 +85,7 @@ class GroundProjectionNode(Node):
 
         #print("message time: " + str(message_time))
         #print("current time: " + str(current_time))
-        print("delay: " + str(delay), "# segments: ", len(seglist_msg.segments))
+        #print("delay: " + str(delay), "# segments: ", len(seglist_msg.segments))
 
         seglist_out = SegmentList()
         seglist_out.header = seglist_msg.header

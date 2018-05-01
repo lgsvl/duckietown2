@@ -15,9 +15,10 @@
 from launch.exit_handler import default_exit_handler, restart_exit_handler
 from ros2run.api import get_executable_path
 
+
 def launch(launch_descriptor, argv):
     ld = launch_descriptor
-    arr = [("pi_camera", "camera_node_sequence", False),
+    arr = [("pi_camera", "camera_node_sequence", True),
             ("dagu_car", "inverse_kinematics_node", True),
             ("dagu_car", "wheels_driver_node", True),
             ("line_detector", "line_detector_node", True),
@@ -29,7 +30,7 @@ def launch(launch_descriptor, argv):
       ld.add_process(
           cmd=[get_executable_path(package_name=package, executable_name=executable)],
           name=executable,
-          # The joy node is required, die if it dies
-          exit_handler=default_exit_handler if not required else restart_exit_handler,
+          # die if required, restart otherwise
+          exit_handler=default_exit_handler if required else restart_exit_handler,
       )
     return ld

@@ -15,32 +15,19 @@
 from launch.exit_handler import default_exit_handler, restart_exit_handler
 from ros2run.api import get_executable_path
 
+
 def launch(launch_descriptor, argv):
     ld = launch_descriptor
-    package = 'joy'
-    ld.add_process(
-        cmd=[get_executable_path(package_name=package, executable_name='joy_node')],
-        name='joy_node',
-        # The joy node is required, die if it dies
-        exit_handler=default_exit_handler,
-    )
-    package = 'joy_mapper'
-    ld.add_process(
-        cmd=[get_executable_path(package_name=package, executable_name='joy_mapper_node')],
-        name='joy_mapper_node',
-        exit_handler=restart_exit_handler,
-    )
-    package = 'dagu_car'
-    ld.add_process(
-        cmd=[get_executable_path(package_name=package, executable_name='inverse_kinematics_node')],
-        name='inverse_kinematics_node',
-        exit_handler=restart_exit_handler,
-    )
-    package = 'dagu_car'
-    ld.add_process(
-        cmd=[get_executable_path(package_name=package, executable_name='wheels_driver_node')],
-        name='wheels_driver_node',
-        exit_handler=restart_exit_handler,
-    )
+    arr = [("joy", "camera_node_sequence", True),
+            ("joy_mapper", "inverse_kinematics_node", False),
+            ("dagu_car", "wheels_driver_node", False),
+            ("dagu_car", "inverse_kinematics_node", False)]
 
+    for package, executable, required in arr:
+      ld.add_process(
+          cmd=[get_executable_path(package_name=package, executable_name=executable)],
+          name=executable,
+          # die if required, restart otherwise  
+          exit_handler=default_exit_handler if required else restart_exit_handler,
+      )
     return ld
