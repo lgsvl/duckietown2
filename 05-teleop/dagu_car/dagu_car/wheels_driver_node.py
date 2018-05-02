@@ -64,6 +64,11 @@ class WheelsDriverNode(Node):
         else:
             self.get_logger().info("[%s] Emergency Stop Released")
 
+    def destroy_node(self):
+        self.get_logger().info("Shutting down motors")
+        self.driver.setWheelsSpeed(left=0.0,right=0.0)
+        super().destroy_node()
+
 
 def main(args=None):
     if args is None:

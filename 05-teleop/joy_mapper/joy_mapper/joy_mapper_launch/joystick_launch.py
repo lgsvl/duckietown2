@@ -18,10 +18,10 @@ from ros2run.api import get_executable_path
 
 def launch(launch_descriptor, argv):
     ld = launch_descriptor
-    arr = [("joy", "camera_node_sequence", True),
-            ("joy_mapper", "inverse_kinematics_node", False),
-            ("dagu_car", "wheels_driver_node", False),
-            ("dagu_car", "inverse_kinematics_node", False)]
+    arr = [("joy", "joy_node", True),
+            ("joy_mapper", "joy_mapper_node", True),
+            ("dagu_car", "wheels_driver_node", True),
+            ("dagu_car", "inverse_kinematics_node", True)]
 
     for package, executable, required in arr:
       ld.add_process(
