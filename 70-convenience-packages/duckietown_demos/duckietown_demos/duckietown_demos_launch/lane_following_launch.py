@@ -27,10 +27,10 @@ def launch(launch_descriptor, argv):
             ("lane_control", "lane_controller_node", True)]
 
     for package, executable, required in arr:
-      ld.add_process(
-          cmd=[get_executable_path(package_name=package, executable_name=executable)],
-          name=executable,
-          # die if required, restart otherwise
-          exit_handler=default_exit_handler if required else restart_exit_handler,
-      )
+        ld.add_process(
+            cmd=[get_executable_path(package_name=package, executable_name=executable)],
+            name=executable,
+            # die if required, restart otherwise
+            exit_handler=default_exit_handler if required else restart_exit_handler,
+        )
     return ld

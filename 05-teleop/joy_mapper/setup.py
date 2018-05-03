@@ -24,8 +24,7 @@ setup(
     test_suite='test',
     entry_points={
         'console_scripts': [
-            'joy_mapper_node = joy_mapper.joy_mapper_node:main',
-            'joystick_launch = joy_mapper_launch.joystick_launch:main'
+            'joy_mapper_node = joy_mapper.joy_mapper_node:main'
         ],
     },
 )

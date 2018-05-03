@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import os
 import sys
 import time
@@ -25,10 +26,12 @@ from duckietown_msgs.msg import Twist2DStamped, LanePose
 
 
 class LaneControllerNode(Node):
-    def __init__(self):
+    def __init__(self, args):
         self.node_name = 'lane_controller_node'
         super().__init__(self.node_name)
         
+        self.args = args
+
         self.lane_reading = None
 
         self.setGains()
@@ -57,7 +60,10 @@ class LaneControllerNode(Node):
         d_thres = 0.2615
         d_offset = 0.0        
 
-        self.v_bar = v_bar # Linear velocity
+        if self.args.gain:
+            self.loginfo("Received gain argument, setting gain to " + str(self.args.gain))
+
+        self.v_bar = v_bar if not self.args.gain else self.args.gain  # Linear velocity
         self.k_d = k_d # P gain for theta
         self.k_theta = k_theta # P gain for d
         self.d_thres = d_thres # Cap for error in d
@@ -104,10 +110,15 @@ class LaneControllerNode(Node):
 def main(args=None):
     if args is None:
         args = sys.argv
-
     rclpy.init(args=args)
 
-    node = LaneControllerNode()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-g", "--gain", 
+                        type=float,
+                        help="gain value for motor speed")
+    args = parser.parse_args()
+    
+    node = LaneControllerNode(args)
     
     try:
         rclpy.spin(node)

@@ -1,15 +1,13 @@
 from setuptools import find_packages
 from setuptools import setup
 
-package_name='lane_control'
+package_name = 'duckietown_demos'
 
 setup(
     name=package_name,
     version='1.0.0',
     packages=find_packages(exclude=['test']),
-    #package_dir={'': 'dagu_car/dagu_car_include'},
-    #setup_requires=['numpy'],
-    install_requires=['setuptools', 'numpy'],
+    install_requires=['launch', 'setuptools'],
     author='Brian Shin',
     author_email='brian.shin@lge.com',
     maintainer='Brian Shin',
@@ -21,12 +19,14 @@ setup(
         'Programming Language :: Python',
         'Topic :: Software Development',
     ],
-    description='Port of original duckietown lane control package to ROS2',
+    description='Port of duckietown_demos package to ROS2',
     license='Apache License, Version 2.0',
     test_suite='test',
     entry_points={
         'console_scripts': [
-            'lane_controller_node = lane_control.lane_controller_node:main'
+            'joystick-demo = duckietown_demos_launch.joystick_launch:main',
+            'lane-following-demo = duckietown_demos_launch.lane_following_launch:main',
+            'lane-following-demo-sim = duckietown_demos_launch.lane_following_simulator_launch:main'
         ],
     },
 )
