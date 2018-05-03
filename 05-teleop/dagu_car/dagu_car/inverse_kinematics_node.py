@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import sys
 import os.path
 import time
@@ -27,10 +28,11 @@ from std_srvs.srv import Empty
 
 
 class InverseKinematicsNode(Node):
-
-    def __init__(self):
+    def __init__(self, args):
         self.node_name = 'inverse_kinematics_node'
         super().__init__(self.node_name)
+
+        self.args = args
 
         self.v_gain = 0.41
         self.omega_gain = 8.3
@@ -56,8 +58,14 @@ class InverseKinematicsNode(Node):
         #self.srv_save = self.create_service(Empty, 'save_calibration', self.cbSrvSaveCalibration)   
 
         self.sub_car_cmd = self.create_subscription(Twist2DStamped, "car_cmd", self.car_cmd_callback)
+        
+        publish_topic = "wheels_cmd"
 
-        self.pub_wheels_cmd = self.create_publisher(WheelsCmdStamped, "wheels_cmd")
+        if self.args.publish_topic:
+            self.loginfo("Received publish topic argument, publishing WheelsCmdStamped to " + self.args.publish_topic)
+            publish_topic = self.args.publish_topic
+
+        self.pub_wheels_cmd = self.create_publisher(WheelsCmdStamped, publish_topic)
 
         self.get_logger().info('[%s] Initialized.' % self.node_name)
         self.printValues()
@@ -162,15 +170,23 @@ class InverseKinematicsNode(Node):
         #print("wheels_cmd timestamp: " + str(msg_wheels_cmd.header.stamp))
         #print("current time: " + str(current_time))
         #print("delay: " + str(delay))
-            
+
+    def loginfo(self, s):
+        self.get_logger().info('%s' % (s))           
 
 def main(args=None):
     if args is None:
         args = sys.argv
-
     rclpy.init(args=args)
 
-    node = InverseKinematicsNode()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--publish_topic",
+                        type=str,
+                        help="topic name to publish wheels command on")
+    args = parser.parse_args()
+
+    node = InverseKinematicsNode(args)
+
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

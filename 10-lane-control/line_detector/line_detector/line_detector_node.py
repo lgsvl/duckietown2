@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import os
 import sys
 import cv2
@@ -36,9 +37,11 @@ from line_detector.line_detector_include.line_detector_plot import color_segment
 #import pickle
 
 class LineDetectorNode(Node):
-    def __init__(self):
+    def __init__(self, args):
         self.node_name = 'line_detector_node'
         super().__init__(self.node_name)
+
+        self.args = args
 
         self.thread_lock = threading.Lock()
 
@@ -65,7 +68,12 @@ class LineDetectorNode(Node):
         self.pub_lines = self.create_publisher(SegmentList, "segment_list_in")
         self.pub_image = self.create_publisher(Image, "image_with_lines")
 
-        self.sub_image = self.create_subscription(CompressedImage, "image/compressed", self.cbImage)
+
+        subscribe_topic = "image/compressed"
+        if self.args.subscribe_topic:
+            self.loginfo("Received subscribe topic argument, subscribing to " + self.args.subscribe_topic)
+            subscribe_topic = self.args.subscribe_topic
+        self.sub_image = self.create_subscription(CompressedImage, subscribe_topic, self.cbImage)
         self.sub_transform = self.create_subscription(AntiInstagramTransform, "transform", self.cbTransform)
         self.sub_switch = self.create_subscription(BoolStamped, "switch", self.cbSwitch)
 
@@ -275,10 +283,15 @@ class LineDetectorNode(Node):
 def main(args=None):
     if args is None:
         args = sys.argv
-
     rclpy.init(args=args)
 
-    node = LineDetectorNode()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--subscribe_topic",
+                        type=str,
+                        help="topic name to subscribe to for camera image")
+    args = parser.parse_args()    
+
+    node = LineDetectorNode(args)
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
