@@ -19,8 +19,7 @@ from ros2run.api import get_executable_path
 def launch(launch_descriptor, argv):
     ld = launch_descriptor
     arr = [("ground_projection", "ground_projection_node", True),
-            ("lane_filter", "lane_filter_node", True),
-            ("lane_control", "lane_controller_node", True)]
+            ("lane_filter", "lane_filter_node", True)]
 
     for package, executable, required in arr:
         ld.add_process(
@@ -38,11 +37,18 @@ def launch(launch_descriptor, argv):
         # die if required, restart otherwise
         exit_handler=default_exit_handler if required else restart_exit_handler
     )
- 
     package, executable,required = "dagu_car", "inverse_kinematics_node", True
     ld.add_process(
         cmd=[get_executable_path(package_name=package, executable_name=executable),
              "--publish_topic", "/simulator/wheels_driver_node/wheels_cmd"],
+        name=executable,
+        # die if required, restart otherwise
+        exit_handler=default_exit_handler if required else restart_exit_handler
+    ) 
+    package, executable,required = "lane_control", "lane_controller_node", True
+    ld.add_process(
+        cmd=[get_executable_path(package_name=package, executable_name=executable),
+             "--gain", "0.6"],
         name=executable,
         # die if required, restart otherwise
         exit_handler=default_exit_handler if required else restart_exit_handler
