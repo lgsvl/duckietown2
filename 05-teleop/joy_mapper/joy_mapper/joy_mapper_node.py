@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import sys
 import time
 import math
@@ -26,8 +27,10 @@ from duckietown_msgs.msg import Twist2DStamped, BoolStamped
 
 class JoyMapper(Node):
 
-    def __init__(self):
+    def __init__(self, args):
         super().__init__('joy_mapper')
+
+        self.args = args
 
         self.joy = None
         self.last_pub_msg = None
@@ -45,7 +48,12 @@ class JoyMapper(Node):
     
         self.sub = self.create_subscription(Joy, 'joy', self.cbJoy)
 
-        self.pub_car_cmd = self.create_publisher(Twist2DStamped, "car_cmd")
+        car_cmd_topic = "car_cmd"
+        if self.args.publish_topic:
+            self.loginfo("Received publish topic argument, publishing Twist2DStamped to " + self.args.publish_topic)
+            car_cmd_topic = self.args.publish_topic
+
+        self.pub_car_cmd = self.create_publisher(Twist2DStamped, car_cmd_topic)
         self.pub_joy_override = self.create_publisher(BoolStamped, "joystick_override")
         self.pub_parallel_autonomy = self.create_publisher(BoolStamped, "parallel_autonomy")
         self.pub_anti_instagram = self.create_publisher(BoolStamped, "anti_instagram_node/click")
@@ -130,14 +138,22 @@ class JoyMapper(Node):
             if some_active:
                 self.get_logger().info('No binding for joy_msg.buttons = %s' % str(joy_msg.buttons))
 
+    def loginfo(self, s):
+        self.get_logger().info('%s' % (s))      
+
 
 def main(args=None):
     if args is None:
         args = sys.argv
-
     rclpy.init(args=args)
 
-    node = JoyMapper()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--publish_topic",
+                        type=str,
+                        help="topic name to publish car command on")
+    args = parser.parse_args()
+
+    node = JoyMapper(args)
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

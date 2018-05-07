@@ -19,7 +19,9 @@ from ros2run.api import get_executable_path
 def launch(launch_descriptor, argv):
     ld = launch_descriptor
     arr = [("ground_projection", "ground_projection_node", True),
-            ("lane_filter", "lane_filter_node", True)]
+            ("lane_filter", "lane_filter_node", True),
+            ("dagu_car", "car_cmd_switch_node", True),
+            ("joy", "joy_node", True)]
 
     for package, executable, required in arr:
         ld.add_process(
@@ -48,10 +50,19 @@ def launch(launch_descriptor, argv):
     package, executable,required = "lane_control", "lane_controller_node", True
     ld.add_process(
         cmd=[get_executable_path(package_name=package, executable_name=executable),
-             "--gain", "0.6"],
-        name=executable,
+             "--gain", "0.4",
+             "--publish_topic", "/lane_controller_node/car_cmd"],
+        name="lane_controller_node",
         # die if required, restart otherwise
         exit_handler=default_exit_handler if required else restart_exit_handler
     ) 
+    ld.add_process(
+        cmd=[get_executable_path(package_name="joy_mapper", executable_name="joy_mapper_node"),
+             "--publish_topic", "/joy_mapper_node/car_cmd"],
+        name="joy_mapper_node",
+        # die if required, restart otherwise
+        exit_handler=default_exit_handler if required else restart_exit_handler,
+    )
+ 
 
     return ld

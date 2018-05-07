@@ -58,9 +58,10 @@ class WheelsDriverNode(Node):
         self.pub_wheels_cmd.publish(self.msg_wheels_cmd) 
 
     def cbEStop(self,msg):
-        #self.estop=not self.estop
+        self.estop=not self.estop
         if self.estop:
             self.get_logger().info("[%s] Emergency Stop Activated")
+            self.driver.setWheelsSpeed(left=0.0,right=0.0)
         else:
             self.get_logger().info("[%s] Emergency Stop Released")
 

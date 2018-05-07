@@ -27,7 +27,8 @@ setup(
     entry_points={
         'console_scripts': [
             'inverse_kinematics_node = dagu_car.inverse_kinematics_node:main',
-            'wheels_driver_node = dagu_car.wheels_driver_node:main'
+            'wheels_driver_node = dagu_car.wheels_driver_node:main',
+            'car_cmd_switch_node = dagu_car.car_cmd_switch_node:main'
         ],
     },
 )
