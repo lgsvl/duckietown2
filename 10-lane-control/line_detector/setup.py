@@ -29,8 +29,7 @@ setup(
     test_suite='test',
     entry_points={
         'console_scripts': [
-            'line_detector_node = line_detector.line_detector_node:main',
-            'test_node = line_detector.test_node:main'
+            'line_detector_node = line_detector.line_detector_node:main'
         ],
     },
 )
