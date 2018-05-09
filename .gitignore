@@ -10,3 +10,7 @@
 ./caches/
 .ipynb_checkpoints
 *.swp
+eggs
+.eggs
+*.egg-info
+

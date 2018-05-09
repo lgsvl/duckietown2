@@ -6,10 +6,11 @@ package_name='lane_following'
 setup(
     name=package_name,
     version='1.0.0',
-    packages=['lane_following'],
-    package_dir={'lane_following': 'src'},
+    packages=find_packages(exclude=['test']),
+    #package_dir={'lane_following': 'src'},
+    #             'lane_following': 'launch'},
     package_data={'lane_following': ['host/model/**/*']},
-    install_requires=['setuptools', 'numpy', 'cv_bridge', 'cv2'],
+    #install_requires=['setuptools', 'numpy', 'cv_bridge', 'cv2'],
     author='David Uhm',
     author_email='david.uhm@lge.com',
     maintainer='David Uhm',
@@ -27,7 +28,8 @@ setup(
     entry_points={
         'console_scripts': [
             'dl_lane_following_node = lane_following.dl_lane_following:main',
-            'dl_lane_following_node_ncs = lane_following.dl_lane_following_ncs:main'
+            'dl_lane_following_node_ncs = lane_following.dl_lane_following_ncs:main',
+            'dl_lane_following_launch = lane_following_launch.dl_lane_following_launch:main'
         ],
     },
 )
