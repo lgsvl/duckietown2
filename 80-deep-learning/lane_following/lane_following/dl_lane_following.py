@@ -1,45 +1,37 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import roslib
+
+import os
+import sys
+import threading
+import time
+import socket
+import struct
+import argparse
+
+import numpy as np
+import cv2
+
+import rclpy
+from rclpy.node import Node
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import CompressedImage, Image, Joy
 from duckietown_utils.jpg import image_cv_from_jpg
 from duckietown_msgs.msg import Twist2DStamped, LanePose, FSMState
-import cv2
-import rospy
-import threading
-import time
-import numpy as np
-import socket
-import numpy
-import os
-import sys
-import struct
-
 
 IMAGE_DIM = (160, 120)
 
 
-class dl_lane_following(object):
-    def __init__(self):
-        self.node_name = rospy.get_name()
-        
+class DLLaneFollowingNode(object):
+    def __init__(self, args):
+        self.node_name = 'dl_lane_following_node'
+        super().__init__(self.node_name)
+
+        self.args = args        
+
         # thread lock
         self.thread_lock = threading.Lock()
-
-        self.host = rospy.get_param('~host')
-        self.port = rospy.get_param('~port')
-        self.speed = rospy.get_param('~speed')
-        self.omega_gain = rospy.get_param('~omega_gain')
-
-        self.addr = (self.host, self.port)
-        
-        # Subscriber
-        self.sub_image = rospy.Subscriber("/simulator/camera_node/image/compressed", CompressedImage, self.callback, queue_size=1)
-        self.sub_joy_btn = rospy.Subscriber('/simulator/joy', Joy, self.callback_joy_btn)
-        
-        # Publisher
-        self.pub_car_cmd = rospy.Publisher("/simulator/joy_mapper_node/car_cmd", Twist2DStamped, queue_size=1)
 
         self.sock = None
         self.state = -1
@@ -47,6 +39,20 @@ class dl_lane_following(object):
         self.max_speed = 0.2
         self.min_speed = 0.1
         self.omega_threshold = 2.5
+        
+        self.host = self.args.host
+        self.port = self.args.port
+        self.speed = self.args.speed
+        self.omega_gain = self.args.omega_gain
+
+        self.addr = (self.host, self.port)
+        
+        # Subscriber
+        self.sub_image = self.create_subscription(CompressedImage, "/simulator/camera_node/image/compressed", self.callback)
+        self.sub_joy_btn = self.create_subscription(Joy, '/simulator/joy', self.callback_joy_btn)
+        
+        # Publisher
+        self.pub_car_cmd = self.create_publisher(Twist2DStamped, "/simulator/joy_mapper_node/car_cmd")
 
     def callback(self, image_msg):
         if self.state == -1:
@@ -61,9 +67,9 @@ class dl_lane_following(object):
         if joy_msg.buttons[5] == 1:  # RB joypad botton
             self.state *= -1
             if self.state == 1:
-                rospy.loginfo('[{}] Start lane following'.format(self.node_name))
+                self.loginfo('[{}] Start lane following'.format(self.node_name))
             if self.state == -1:
-                rospy.loginfo('[{}] Stop lane following'.format(self.node_name))
+                self.loginfo('[{}] Stop lane following'.format(self.node_name))
 
     def processImage(self, image_msg):
         if not self.thread_lock.acquire(False):
@@ -82,7 +88,7 @@ class dl_lane_following(object):
         try:
             image_cv = image_cv_from_jpg(image_msg.data)
         except ValueError as e:
-            rospy.loginfo('Could not decode image: %s' % e)
+            self.loginfo('Could not decode image: %s' % e)
             return
 
         # import image for classification
@@ -103,7 +109,7 @@ class dl_lane_following(object):
                 self.sock = None
                 return
             self.sock.settimeout(1.0)
-            rospy.loginfo("Connected")
+            self.loginfo("Connected")
 
         data = ""
         try:
@@ -115,7 +121,7 @@ class dl_lane_following(object):
             while len(data) < 4:
                 data += self.sock.recv(4)
         except:
-            rospy.loginfo("Disconnected from server")
+            self.loginfo("Disconnected from server")
             self.sock.close()
             self.sock = None
             return
@@ -147,8 +153,40 @@ class dl_lane_following(object):
 
         return v
 
+    def loginfo(self, s):
+        self.get_logger().info('%s' % (s))
+
+
+def main(args=None):
+    if args is None:
+        args = sys.argv
+    rclpy.init(args=args)
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host",
+                        type=str,
+                        help="ip address of host running machine learning server")
+    parser.add_argument("--port",
+                        type=int,
+                        help="port number of host")
+    parser.add_argument("--speed",
+                        type=float,
+                        help="wheel speed velocity gain")
+    parser.add_argument("--omega_gain",
+                        type=float,
+                        help="multiplier for trim vehicle turning rate")
+    parser.add_argument("--publish_topic",
+                        type=str,
+                        help="name of topic to publish car command to")
+    args = parser.parse_args()
+    node = DLLaneFollowingNode(args)
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    node.destroy_node()
+    rclpy.shutdown()
+
 
 if __name__ == '__main__':
-    rospy.init_node('dl_lane_following', anonymous=False)
-    dl_lane_following = dl_lane_following()
-    rospy.spin()
+    main()
