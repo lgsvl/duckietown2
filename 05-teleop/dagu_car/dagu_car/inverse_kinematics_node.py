@@ -57,15 +57,8 @@ class InverseKinematicsNode(Node):
         self.srv_set_limit = self.create_service(SetValue, 'set_trim', self.cbSrvSetTrim)   
         #self.srv_save = self.create_service(Empty, 'save_calibration', self.cbSrvSaveCalibration)   
 
-        self.sub_car_cmd = self.create_subscription(Twist2DStamped, "/car_cmd", self.car_cmd_callback)
-        
-        publish_topic = "wheels_cmd"
-
-        if self.args.publish_topic:
-            self.loginfo("Received publish topic argument, publishing WheelsCmdStamped to " + self.args.publish_topic)
-            publish_topic = self.args.publish_topic
-
-        self.pub_wheels_cmd = self.create_publisher(WheelsCmdStamped, publish_topic)
+        self.sub_car_cmd = self.create_subscription(Twist2DStamped, self.args.subscribe_topic, self.car_cmd_callback)
+        self.pub_wheels_cmd = self.create_publisher(WheelsCmdStamped, self.args.publish_topic)
 
         self.get_logger().info('[%s] Initialized.' % self.node_name)
         self.printValues()
@@ -174,6 +167,7 @@ class InverseKinematicsNode(Node):
     def loginfo(self, s):
         self.get_logger().info('%s' % (s))           
 
+
 def main(args=None):
     if args is None:
         args = sys.argv
@@ -182,7 +176,12 @@ def main(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--publish_topic",
                         type=str,
+                        default="/wheels_cmd",
                         help="topic name to publish wheels command on")
+    parser.add_argument("--subscribe_topic",
+                        type=str,
+                        default="/car_cmd",
+                        help="topic name to subscribe to for car commands")
     args = parser.parse_args()
 
     node = InverseKinematicsNode(args)

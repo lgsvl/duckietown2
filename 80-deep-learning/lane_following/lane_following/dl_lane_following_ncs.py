@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-from __future__ import print_function
-import roslib
+
+import sys
+import threading
+import time
+
+import numpy as np
+import cv2
+
+import rclpy
+from rclpy.node import Node
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import CompressedImage, Image, Joy
 from duckietown_utils.jpg import image_cv_from_jpg
 from duckietown_msgs.msg import Twist2DStamped
-import cv2
-import rospy
-import threading
-import time
-import numpy as np
-import numpy
-import os
-import sys
 from mvnc import mvncapi as mvnc
 
 
@@ -21,15 +21,25 @@ BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 GRAPH_NAME = 'caffe_model_2.graph'
 
 
-class dl_lane_following(object):
-    def __init__(self):
-        self.node_name = rospy.get_name()
+class DLLaneFollowingNCSNode(Node):
+    def __init__(self, args):
+        self.node_name = 'dl_lane_following_ncs_node'
+        super().__init__(self.node_name)
+
+        self.args = args
         
         # thread lock
         self.thread_lock = threading.Lock()
 
-        self.speed = rospy.get_param('~speed')
-        self.omega_gain = rospy.get_param('~omega_gain')
+        self.sock = None
+        self.state = -1
+        
+        self.max_speed = 0.2
+        self.min_speed = 0.1
+        self.omega_threshold = 2.5
+        
+        self.speed = self.args.speed
+        self.omega_gain = self.args.omega_gain
 
         devices = mvnc.EnumerateDevices()
         device = mvnc.Device(devices[0])
@@ -40,7 +50,7 @@ class dl_lane_following(object):
 
         self.graph = device.AllocateGraph(graph_in_memory)
         # self.graph.SetGraphOption(mvnc.GlobalOption.LOG_LEVEL, 2)
-        rospy.loginfo('[{}] Graph allocated: {}'.format(self.node_name, GRAPH_NAME))
+        self.loginfo('[{}] Graph allocated: {}'.format(self.node_name, GRAPH_NAME))
 
         # Subscriber
         self.sub_image = rospy.Subscriber("/simulator/camera_node/image/compressed", CompressedImage, self.callback, queue_size=1)
@@ -49,12 +59,6 @@ class dl_lane_following(object):
         # Publisher
         self.pub_car_cmd = rospy.Publisher("/simulator/joy_mapper_node/car_cmd", Twist2DStamped, queue_size=1)
 
-        self.sock = None
-        self.state = -1
-        
-        self.max_speed = 0.2
-        self.min_speed = 0.1
-        self.omega_threshold = 2.5
 
     def callback(self, image_msg):
         if self.state == -1:
@@ -69,9 +73,9 @@ class dl_lane_following(object):
         if joy_msg.buttons[5] == 1:  # RB joypad botton
             self.state *= -1
             if self.state == 1:
-                rospy.loginfo('[{}] Start lane following'.format(self.node_name))
+                self.loginfo('[{}] Start lane following'.format(self.node_name))
             if self.state == -1:
-                rospy.loginfo('[{}] Stop lane following'.format(self.node_name))
+                self.loginfo('[{}] Stop lane following'.format(self.node_name))
 
     def processImage(self, image_msg):
         if not self.thread_lock.acquire(False):
@@ -129,6 +133,37 @@ class dl_lane_following(object):
 
         return v
 
+    def loginfo(self, s):
+        self.get_logger().info('%s' % (s))
+
+
+def main(args=None):
+    if args is None:
+        args = sys.argv
+    rclpy.init(args=args)
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--speed",
+                        type=float,
+                        default=0.2,
+                        help="wheel speed velocity gain")
+    parser.add_argument("--omega_gain",
+                        type=float,
+                        default=1.0,
+                        help="multiplier for trim vehicle turning rate")
+    parser.add_argument("--publish_topic",
+                        type=str,
+                        default="/simulator/joy_mapper_node/car_cmd",
+                        help="name of topic to publish car command to")
+    args = parser.parse_args()
+    node = DLLaneFollowingNode(args)
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    node.destroy_node()
+    rclpy.shutdown()
+ 
 
 if __name__ == '__main__':
     rospy.init_node('dl_lane_following', anonymous=False)

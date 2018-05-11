@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import sys
+import argparse
 
 import rclpy
 from rclpy.node import Node
@@ -21,17 +22,19 @@ from duckietown_msgs.msg import Twist2DStamped, BoolStamped
 
 
 class CarCmdSwitchNode(Node):
-    def __init__(self):
+    def __init__(self, args):
         self.node_name = 'car_cmd_switch_node'
         super().__init__(self.node_name)
 
+        self.args = args
+
         self.joystick_override = False
 
-        self.pub_cmd = self.create_publisher(Twist2DStamped, "/car_cmd")
+        self.pub_cmd = self.create_publisher(Twist2DStamped, self.args.publish_topic)
 
-        self.sub_joy_cmd = self.create_subscription(Twist2DStamped, "/joy_mapper_node/car_cmd", self.joy_cmd_callback)
-        self.sub_car_cmd = self.create_subscription(Twist2DStamped, "/lane_controller_node/car_cmd", self.car_cmd_callback)
-        self.sub_joystick_switch = self.create_subscription(BoolStamped, "/joystick_override", self.joystick_override_callback)
+        self.sub_joy_cmd = self.create_subscription(Twist2DStamped, self.args.subscribe_topic1, self.joy_cmd_callback)
+        self.sub_car_cmd = self.create_subscription(Twist2DStamped, self.args.subscribe_topic2, self.car_cmd_callback)
+        self.sub_joystick_switch = self.create_subscription(BoolStamped, self.args.subscribe_topic_switch, self.joystick_override_callback)
         
     def joy_cmd_callback(self, joy_cmd_msg):
         if self.joystick_override:
@@ -55,10 +58,28 @@ class CarCmdSwitchNode(Node):
 def main(args=None):
     if args is None:
         args = sys.argv
-
     rclpy.init(args=args)
 
-    node = CarCmdSwitchNode()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--subscribe_topic1",
+                        type=str,
+                        default="/joy_mapper_node/car_cmd",
+                        help="topic to subscribe to for first car command option")
+    parser.add_argument("--subscribe_topic2",
+                        type=str,
+                        default="/lane_controller_node/car_cmd",
+                        help="topic to subscribe to for second car command option")
+    parser.add_argument("--subscribe_topic_switch",
+                        type=str,
+                        default="/joystick_override",
+                        help="topic to subscribe to for switching between car command options")
+    parser.add_argument("--publish_topic",
+                        type=str,
+                        default="/car_cmd",
+                        help="name of topic to publish actual car command to")
+
+    args = parser.parse_args()
+    node = CarCmdSwitchNode(args)
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

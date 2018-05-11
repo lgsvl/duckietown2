@@ -31,11 +31,44 @@ def launch(launch_descriptor, argv):
             exit_handler=default_exit_handler if required else restart_exit_handler,
         )
     """
-    
-    package, executable,required = "lane_following", "dl_lane_following", True
+    package, executable,required = "joy", "joy_node", True
+    ld.add_process(
+        cmd=[get_executable_path(package_name=package, executable_name=executable)],
+        name=executable,
+        # die if required, restart otherwise
+        exit_handler=default_exit_handler if required else restart_exit_handler
+    )
+    package, executable,required = "joy_mapper", "joy_mapper_node", True
     ld.add_process(
         cmd=[get_executable_path(package_name=package, executable_name=executable),
-             "--publish_topic", "/simulator/camera_node/image/compressed"],
+            "--publish_topic", "/joy_mapper_node/car_cmd"],
+        name=executable,
+        # die if required, restart otherwise
+        exit_handler=default_exit_handler if required else restart_exit_handler
+    )
+    package, executable,required = "dagu_car", "car_cmd_switch_node", True
+    ld.add_process(
+        cmd=[get_executable_path(package_name=package, executable_name=executable),
+            "--subscribe_topic1", "/joy_mapper_node/car_cmd",
+            "--subscribe_topic2", "/dl_lane_following_node/car_cmd"],
+        name=executable,
+        # die if required, restart otherwise
+        exit_handler=default_exit_handler if required else restart_exit_handler
+    )
+    package, executable,required = "dagu_car", "inverse_kinematics_node", True
+    ld.add_process(
+        cmd=[get_executable_path(package_name=package, executable_name=executable),
+            "--subscribe_topic", "/car_cmd",
+            "--publish_topic", "/simulator/wheels_driver_node/wheels_cmd"],
+        name=executable,
+        # die if required, restart otherwise
+        exit_handler=default_exit_handler if required else restart_exit_handler
+    )
+    package, executable,required = "lane_following", "dl_lane_following_node", True
+    ld.add_process(
+        cmd=[get_executable_path(package_name=package, executable_name=executable),
+            "--publish_topic", "/dl_lane_following_node/car_cmd",
+            "--speed", "0.4"],
         name=executable,
         # die if required, restart otherwise
         exit_handler=default_exit_handler if required else restart_exit_handler
