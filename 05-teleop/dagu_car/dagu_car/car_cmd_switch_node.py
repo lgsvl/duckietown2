@@ -28,7 +28,7 @@ class CarCmdSwitchNode(Node):
 
         self.args = args
 
-        self.joystick_override = False
+        self.joystick_override = True
 
         self.pub_cmd = self.create_publisher(Twist2DStamped, self.args.publish_topic)
 
