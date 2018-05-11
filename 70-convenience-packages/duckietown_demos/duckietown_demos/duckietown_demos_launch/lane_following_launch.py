@@ -25,7 +25,7 @@ def launch(launch_descriptor, argv):
             ("ground_projection", "ground_projection_node", True),
             ("lane_filter", "lane_filter_node", True),
             ("lane_control", "lane_controller_node", True),
-            ("dagu_car", "car_cmd_switch_node", True),
+            #("dagu_car", "car_cmd_switch_node", True),
             ("joy", "joy_node", True)]
 
     for package, executable, required in arr:
@@ -39,6 +39,17 @@ def launch(launch_descriptor, argv):
         cmd=[get_executable_path(package_name="joy_mapper", executable_name="joy_mapper_node"),
              "--publish_topic", "/joy_mapper_node/car_cmd"],
         name="joy_mapper_node",
+        # die if required, restart otherwise
+        exit_handler=default_exit_handler if required else restart_exit_handler,
+    )
+    package, executable, required = "dagu_car", "car_cmd_switch_node", True
+    ld.add_process(
+        cmd=[get_executable_path(package_name=package, executable_name=executable),
+            "--subscribe_topic1", "/joy_mapper_node/car_cmd",
+            "--subscribe_topic2", "/lane_controller_node/car_cmd",
+            "--subscribe_topic_switch", "/joystick_override",
+            "--publish_topic", "/car_cmd"],
+        name=executable,
         # die if required, restart otherwise
         exit_handler=default_exit_handler if required else restart_exit_handler,
     )

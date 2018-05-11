@@ -67,7 +67,7 @@ def main(args=None):
                         help="topic to subscribe to for first car command option")
     parser.add_argument("--subscribe_topic2",
                         type=str,
-                        default="/lane_controller_node/car_cmd",
+                        default="/joy_mapper_node/car_cmd",
                         help="topic to subscribe to for second car command option")
     parser.add_argument("--subscribe_topic_switch",
                         type=str,

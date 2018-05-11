@@ -36,6 +36,8 @@ from line_detector.line_detector_include.line_detector_plot import color_segment
 
 #import pickle
 
+DEBUG=0
+
 class LineDetectorNode(Node):
     def __init__(self, args):
         self.node_name = 'line_detector_node'
@@ -157,13 +159,13 @@ class LineDetectorNode(Node):
         try:
             self.processImage_(image_msg)
             #image_msg.data = list(open("/dev/shm/a.jpg", "rb").read())
-            #message_time = image_msg.header.stamp.sec + image_msg.header.stamp.nanosec*1e-9
-            #current_time = time.time()
-            #delay = current_time - message_time
-            #print("message time: " + str(message_time))
-            #print("current time: " + str(current_time))
-            #print("delay: " + str(delay))
-
+            if DEBUG:            
+                message_time = image_msg.header.stamp.sec + image_msg.header.stamp.nanosec*1e-9
+                current_time = time.time()
+                delay = current_time - message_time
+                print("message time: " + str(message_time))
+                print("current time: " + str(current_time))
+                print("delay: " + str(delay))
         finally:
             self.thread_lock.release()
 

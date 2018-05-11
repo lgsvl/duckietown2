@@ -36,10 +36,7 @@ class LaneControllerNode(Node):
 
         self.setGains()
         
-        publish_topic = "/car_cmd"
-        if self.args.publish_topic:
-            self.loginfo("Received publish topic argument, publishing Twist2DStamped to " + self.args.publish_topic)
-            publish_topic = self.args.publish_topic
+        publish_topic = self.args.publish_topic
         self.pub_car_cmd = self.create_publisher(Twist2DStamped, publish_topic)
         self.sub_lane_reading = self.create_subscription(LanePose, "lane_pose", self.cbPose)
 
@@ -122,6 +119,7 @@ def main(args=None):
                         help="gain value for motor speed")
     parser.add_argument("--publish_topic", 
                         type=str,
+                        default="/lane_controller_node/car_cmd",
                         help="topic name to publish car command to")
     args = parser.parse_args()
     
