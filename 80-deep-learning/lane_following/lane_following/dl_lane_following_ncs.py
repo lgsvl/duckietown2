@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 import sys
+import os
 import threading
 import time
+import argparse
 
 import numpy as np
 import cv2
@@ -10,8 +12,8 @@ import cv2
 import rclpy
 from rclpy.node import Node
 from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import CompressedImage, Image, Joy
 from duckietown_utils.jpg import image_cv_from_jpg
+from sensor_msgs.msg import CompressedImage, Image, Joy
 from duckietown_msgs.msg import Twist2DStamped
 from mvnc import mvncapi as mvnc
 
@@ -32,7 +34,7 @@ class DLLaneFollowingNCSNode(Node):
         self.thread_lock = threading.Lock()
 
         self.sock = None
-        self.state = -1
+        self.state = 1
         
         self.max_speed = 0.2
         self.min_speed = 0.1
@@ -52,30 +54,21 @@ class DLLaneFollowingNCSNode(Node):
         # self.graph.SetGraphOption(mvnc.GlobalOption.LOG_LEVEL, 2)
         self.loginfo('[{}] Graph allocated: {}'.format(self.node_name, GRAPH_NAME))
 
-        # Subscriber
-        self.sub_image = rospy.Subscriber("/simulator/camera_node/image/compressed", CompressedImage, self.callback, queue_size=1)
-        self.sub_joy_btn = rospy.Subscriber('/simulator/joy', Joy, self.callback_joy_btn, queue_size=1)
-        
-        # Publisher
-        self.pub_car_cmd = rospy.Publisher("/simulator/joy_mapper_node/car_cmd", Twist2DStamped, queue_size=1)
-
+        self.sub_image = self.create_subscription(CompressedImage, self.args.subscribe_topic, self.callback)
+        self.sub_joy_btn = self.create_subscription(BoolStamped, self.args.joystick_override, self.joystick_override_callback)
+        self.pub_car_cmd = self.create_publisher(Twist2DStamped, self.args.publish_topic)
 
     def callback(self, image_msg):
         if self.state == -1:
             return
-
         # start a daemon thread to process the image
         thread = threading.Thread(target=self.processImage, args=(image_msg,))
         thread.setDaemon(True)
         thread.start()
 
-    def callback_joy_btn(self, joy_msg):
-        if joy_msg.buttons[5] == 1:  # RB joypad botton
-            self.state *= -1
-            if self.state == 1:
-                self.loginfo('[{}] Start lane following'.format(self.node_name))
-            if self.state == -1:
-                self.loginfo('[{}] Stop lane following'.format(self.node_name))
+    def joystick_override_callback(self, joystick_override_msg):
+        self.loginfo("Switching to joystick mode: " + str(joystick_override_msg.data))
+        self.state = 1 if joystick_override_msg.data else -1
 
     def processImage(self, image_msg):
         if not self.thread_lock.acquire(False):
@@ -94,7 +87,7 @@ class DLLaneFollowingNCSNode(Node):
         try:
             image_cv = image_cv_from_jpg(image_msg.data)
         except ValueError as e:
-            rospy.loginfo('Could not decode image: %s' % e)
+            self.loginfo('Could not decode image: %s' % e)
             return
 
         # import image for classification
@@ -116,7 +109,7 @@ class DLLaneFollowingNCSNode(Node):
         car_control_msg.omega = predicted_omega * self.omega_gain
         t2 = time.time()
 
-        print('Time: %.3f Speed: %.3f Omega: %.3f' % ((t2 - t1), car_control_msg.v, car_control_msg.omega))
+        #print('Time: %.3f Speed: %.3f Omega: %.3f' % ((t2 - t1), car_control_msg.v, car_control_msg.omega))
         
         # publish the control command
         self.publishCmd(car_control_msg)
@@ -134,7 +127,7 @@ class DLLaneFollowingNCSNode(Node):
         return v
 
     def loginfo(self, s):
-        self.get_logger().info('%s' % (s))
+        self.get_logger().info(s)
 
 
 def main(args=None):
@@ -151,12 +144,20 @@ def main(args=None):
                         type=float,
                         default=1.0,
                         help="multiplier for trim vehicle turning rate")
+    parser.add_argument("--subscribe_topic",
+                        type=str,
+                        default="/simulator/camera_node/image/compressed",
+                        help="name of topic to subscribe to for camera images")
     parser.add_argument("--publish_topic",
                         type=str,
                         default="/simulator/joy_mapper_node/car_cmd",
                         help="name of topic to publish car command to")
+    parser.add_argument("--joystick_override",
+                        type=str,
+                        default="/joystick_override",
+                        help="name of topic to subscribe to for joystick override signal")
     args = parser.parse_args()
-    node = DLLaneFollowingNode(args)
+    node = DLLaneFollowingNCSNode(args)
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

@@ -158,7 +158,7 @@ class DLLaneFollowingNode(Node):
         return v
 
     def loginfo(self, s):
-        self.get_logger().info('%s' % (s))
+        self.get_logger().info(s)
 
 
 def main(args=None):
