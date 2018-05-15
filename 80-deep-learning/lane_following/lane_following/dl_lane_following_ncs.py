@@ -12,9 +12,9 @@ import cv2
 import rclpy
 from rclpy.node import Node
 from cv_bridge import CvBridge, CvBridgeError
-from duckietown_utils.jpg import image_cv_from_jpg
+from duckietown.duckietown_utils.jpg import image_cv_from_jpg
 from sensor_msgs.msg import CompressedImage, Image, Joy
-from duckietown_msgs.msg import Twist2DStamped
+from duckietown_msgs.msg import Twist2DStamped, BoolStamped
 from mvnc import mvncapi as mvnc
 
 
@@ -59,7 +59,7 @@ class DLLaneFollowingNCSNode(Node):
         self.pub_car_cmd = self.create_publisher(Twist2DStamped, self.args.publish_topic)
 
     def callback(self, image_msg):
-        if self.state == -1:
+        if self.state == 1:
             return
         # start a daemon thread to process the image
         thread = threading.Thread(target=self.processImage, args=(image_msg,))
@@ -77,6 +77,12 @@ class DLLaneFollowingNCSNode(Node):
 
         try:
             self.processImage_(image_msg)
+            #message_time = image_msg.header.stamp.sec + image_msg.header.stamp.nanosec*1e-9
+            #current_time = time.time()
+            #delay = current_time - message_time
+            #print("message time: " + str(message_time))
+            #print("current time: " + str(current_time))
+            #print("delay: "  + str(delay))
         finally:
             # release the thread lock
             self.thread_lock.release()
@@ -142,7 +148,7 @@ def main(args=None):
                         help="wheel speed velocity gain")
     parser.add_argument("--omega_gain",
                         type=float,
-                        default=1.0,
+                        default=3.0,
                         help="multiplier for trim vehicle turning rate")
     parser.add_argument("--subscribe_topic",
                         type=str,

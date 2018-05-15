@@ -17,14 +17,19 @@ from ros2run.api import get_executable_path
 
 def launch(launch_descriptor, argv):
     ld = launch_descriptor
-    
-    package, executable,required = "joy", "joy_node", True
-    ld.add_process(
-        cmd=[get_executable_path(package_name=package, executable_name=executable)],
-        name=executable,
-        # die if required, restart otherwise
-        exit_handler=default_exit_handler if required else restart_exit_handler
-    )
+   
+    arr = [("pi_camera", "camera_node_sequence", True),
+            ("dagu_car", "wheels_driver_node", True),
+            ("joy", "joy_node", True)]
+
+    for package, executable, required in arr:
+        ld.add_process(
+            cmd=[get_executable_path(package_name=package, executable_name=executable)],
+            name=executable,
+            # die if required, restart otherwise
+            exit_handler=default_exit_handler if required else restart_exit_handler,
+        ) 
+
     package, executable,required = "joy_mapper", "joy_mapper_node", True
     ld.add_process(
         cmd=[get_executable_path(package_name=package, executable_name=executable),
@@ -46,7 +51,7 @@ def launch(launch_descriptor, argv):
     ld.add_process(
         cmd=[get_executable_path(package_name=package, executable_name=executable),
             "--subscribe_topic", "/car_cmd",
-            "--publish_topic", "/simulator/wheels_driver_node/wheels_cmd"],
+            "--publish_topic", "/wheels_cmd"],
         name=executable,
         # die if required, restart otherwise
         exit_handler=default_exit_handler if required else restart_exit_handler
@@ -54,10 +59,11 @@ def launch(launch_descriptor, argv):
     package, executable,required = "lane_following", "dl_lane_following_node_ncs", True
     ld.add_process(
         cmd=[get_executable_path(package_name=package, executable_name=executable),
-            "--subscribe_topic", "/simulator/camera_node/image/compressed",
+            "--subscribe_topic", "/image/compressed",
             "--publish_topic", "/dl_lane_following_node/car_cmd",
             "--joystick_override", "/joystick_override",
-            "--speed", "0.4"],
+            "--speed", "0.2",
+            "--omega_gain=3.0"],
         name=executable,
         # die if required, restart otherwise
         exit_handler=default_exit_handler if required else restart_exit_handler
