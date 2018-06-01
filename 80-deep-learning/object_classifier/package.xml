@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>object_classifier</name>
+  <version>0.0.0</version>
+  <description>The object classifier package</description>
+
+  <license>TODO</license>
+
+  <maintainer email="david.uhm@lge.com">David Uhm</maintainer>
+  <author email="david.uhm@lge.com">David Uhm</author>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>duckietown_msgs</exec_depend>
+  <exec_depend>launch</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
