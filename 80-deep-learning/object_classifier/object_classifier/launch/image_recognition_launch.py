@@ -31,13 +31,14 @@ def launch(launch_descriptor, argv):
         'camera_topic': '/image/compressed',
         'object_topic': '/object_classifier/output',
         'verbose': 'True',
-        'min_score_threshold': '0.1',
+        'min_score_threshold': '0.5',
     }
 
-    for arg in argv:
-        key, value = arg.split(':=')
-        if key in arg_map:
-            arg_map[key] = value
+    if argv:
+        for arg in argv:
+            key, value = arg.split(':=')
+            if key in arg_map:
+                arg_map[key] = value
 
     nodes = [
         ("pi_camera", "camera_node_sequence", True),
