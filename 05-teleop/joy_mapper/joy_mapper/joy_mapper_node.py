@@ -24,6 +24,11 @@ from builtin_interfaces.msg import Time
 from sensor_msgs.msg import Joy
 from duckietown_msgs.msg import Twist2DStamped, BoolStamped    
 
+import RPi.GPIO as GPIO
+
+
+OUT = 18  # GPIO pin number for IR sensor out signal
+
 
 class JoyMapper(Node):
 
@@ -32,8 +37,15 @@ class JoyMapper(Node):
 
         self.args = args
 
+        if args.use_cliff_detection:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(OUT, GPIO.IN)
+            time.sleep(1)
+            self.loginfo('Cliff detection mode is running. Drive safely.')
+
         self.joy = None
         self.last_pub_msg = None
+        self.cliff_flag = True
         current_time = time.time()
 
         self.last_pub_time = Time()
@@ -81,6 +93,20 @@ class JoyMapper(Node):
         car_cmd_msg = Twist2DStamped()
         car_cmd_msg.header.stamp = self.joy.header.stamp
         car_cmd_msg.v = self.joy.axes[1] * self.v_gain
+
+        if self.args.use_cliff_detection:
+            is_cliff_detected = GPIO.input(OUT)
+            if is_cliff_detected:
+                if self.cliff_flag:
+                    self.get_logger().info('Cliff detected ahead!')
+                    self.cliff_flag = False
+                if car_cmd_msg.v > 0:
+                    car_cmd_msg.v = 0.
+            else:
+                if not self.cliff_flag:
+                    self.get_logger().info('Safe now. No cliff ahead.')
+                    self.cliff_flag = True
+
         if self.bicycle_kinematics:
             steering_angle = self.joy.axes[3] * self.steer_angle_gain
             car_cmd_msg.omega = car_cmd_msg.v / self.simulated_vehicle_length * math.tan(steering_angle)
@@ -151,6 +177,9 @@ def main(args=None):
     parser.add_argument("--publish_topic",
                         type=str,
                         help="topic name to publish car command on")
+    parser.add_argument("--use_cliff_detection",
+                        type=int,
+                        help="1 if using ir sensor to detect cliff, 0 otherwise")
     args = parser.parse_args()
 
     node = JoyMapper(args)
