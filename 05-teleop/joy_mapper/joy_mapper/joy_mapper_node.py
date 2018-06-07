@@ -28,6 +28,8 @@ import RPi.GPIO as GPIO
 
 
 OUT = 18  # GPIO pin number for IR sensor out signal
+TRIG = 23
+ECHO = 24
 
 
 class JoyMapper(Node):
@@ -42,6 +44,14 @@ class JoyMapper(Node):
             GPIO.setup(OUT, GPIO.IN)
             time.sleep(1)
             self.loginfo('Cliff detection mode is running. Drive safely.')
+
+        if args.use_obstacle_detection:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(TRIG,GPIO.OUT)
+            GPIO.setup(ECHO,GPIO.IN)
+            GPIO.output(TRIG, False)
+            time.sleep(2)
+            self.loginfo('obstacle detection mode is running. Drive safely.')
 
         self.joy = None
         self.last_pub_msg = None
@@ -88,7 +98,7 @@ class JoyMapper(Node):
         #self.get_logger().info('I heard: [%s]' % str(joy_msg.buttons))
         self.publishControl()
         self.processButtons(joy_msg)
-            
+
     def publishControl(self):
         car_cmd_msg = Twist2DStamped()
         car_cmd_msg.header.stamp = self.joy.header.stamp
@@ -97,11 +107,15 @@ class JoyMapper(Node):
         if self.args.use_cliff_detection:
             car_cmd_msg = self.cliff_detection_handler(car_cmd_msg)
 
+        if self.args.use_obstacle_detection:
+            car_cmd_msg = self.obstacle_detection_handler(car_cmd_msg)
+
         if self.bicycle_kinematics:
             steering_angle = self.joy.axes[3] * self.steer_angle_gain
             car_cmd_msg.omega = car_cmd_msg.v / self.simulated_vehicle_length * math.tan(steering_angle)
         else:
             car_cmd_msg.omega = self.joy.axes[3] * self.omega_gain
+
         self.pub_car_cmd.publish(car_cmd_msg)
 
     def processButtons(self, joy_msg):
@@ -171,6 +185,46 @@ class JoyMapper(Node):
 
         return car_cmd_msg
 
+    def obstacle_detection_handler(self, car_cmd_msg):
+        if GPIO.input(ECHO) != 0:
+            print('sensor not ready. skipping')
+            return car_cmd_msg
+
+        GPIO.output(TRIG, True)
+        time.sleep(0.00001)
+        GPIO.output(TRIG, False)
+
+        pulse_duration = None
+        t0 = time.time()
+        while GPIO.input(ECHO) == 0:
+            pulse_start = time.time()
+            if pulse_start - t0 > 0.01:
+                print('no obstacles nearby A')
+                return car_cmd_msg
+
+        while GPIO.input(ECHO) == 1:
+            pulse_end = time.time()
+            pulse_duration = pulse_end - pulse_start
+            if pulse_duration > 0.01:
+                print('no obstacles nearby B')
+                return car_cmd_msg
+
+        if pulse_duration is None:
+            return car_cmd_msg
+
+        distance = pulse_duration * 17150
+        distance = round(distance, 2)
+
+        if distance < 10:
+            print('obstacle detected in {} cm'.format(distance))
+            if car_cmd_msg.v > 0:
+                print('Stop')
+                car_cmd_msg.v = 0.
+        else:
+            print('no obstacle {}'.format(distance))
+
+        return car_cmd_msg
+
 
 def main(args=None):
     if args is None:
@@ -184,6 +238,9 @@ def main(args=None):
     parser.add_argument("--use_cliff_detection",
                         type=int,
                         help="1 if using ir sensor to detect cliff, 0 otherwise")
+    parser.add_argument("--use_obstacle_detection",
+                        type=int,
+                        help="1 if using ultrasonic sensor to detect obstacle, 0 otherwise")
     args = parser.parse_args()
 
     node = JoyMapper(args)

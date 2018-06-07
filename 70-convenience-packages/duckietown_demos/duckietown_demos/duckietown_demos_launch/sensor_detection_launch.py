@@ -30,6 +30,7 @@ def launch(launch_descriptor, argv):
     arg_map = {
         'publish_topic': '/car_cmd',
         'use_cliff_detection': '1',
+        'use_obstacle_detection': '1',
     }
 
     if argv:
@@ -40,7 +41,7 @@ def launch(launch_descriptor, argv):
 
     nodes = [
         ('joy', 'joy_node', True),
-        ('joy_mapper', 'joy_mapper_node', True, '--publish_topic', arg_map['publish_topic'], '--use_cliff_detection', arg_map['use_cliff_detection']),
+        ('joy_mapper', 'joy_mapper_node', True, '--publish_topic', arg_map['publish_topic'], '--use_cliff_detection', arg_map['use_cliff_detection'], '--use_obstacle_detection', arg_map['use_obstacle_detection']),
         ('dagu_car', 'wheels_driver_node', True),
         ('dagu_car', 'inverse_kinematics_node', True),
     ]
