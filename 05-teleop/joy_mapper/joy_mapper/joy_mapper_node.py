@@ -28,8 +28,8 @@ import RPi.GPIO as GPIO
 
 
 OUT = 18  # GPIO pin number for IR sensor out signal
-TRIG = 23
-ECHO = 24
+TRIG = 23  # GPIO pin number for Ultrasonic sensor trig signal
+ECHO = 24  # GPIO pin number for Ultrasonic sensor echo signal
 
 
 class JoyMapper(Node):
@@ -51,11 +51,13 @@ class JoyMapper(Node):
             GPIO.setup(ECHO,GPIO.IN)
             GPIO.output(TRIG, False)
             time.sleep(2)
-            self.loginfo('obstacle detection mode is running. Drive safely.')
+            self.loginfo('Obstacle detection mode is running. Drive safely.')
 
         self.joy = None
         self.last_pub_msg = None
         self.cliff_flag = True
+        self.obstacle_flag = True
+
         current_time = time.time()
 
         self.last_pub_time = Time()
@@ -187,7 +189,6 @@ class JoyMapper(Node):
 
     def obstacle_detection_handler(self, car_cmd_msg):
         if GPIO.input(ECHO) != 0:
-            print('sensor not ready. skipping')
             return car_cmd_msg
 
         GPIO.output(TRIG, True)
@@ -199,14 +200,12 @@ class JoyMapper(Node):
         while GPIO.input(ECHO) == 0:
             pulse_start = time.time()
             if pulse_start - t0 > 0.01:
-                print('no obstacles nearby A')
                 return car_cmd_msg
 
         while GPIO.input(ECHO) == 1:
             pulse_end = time.time()
             pulse_duration = pulse_end - pulse_start
             if pulse_duration > 0.01:
-                print('no obstacles nearby B')
                 return car_cmd_msg
 
         if pulse_duration is None:
@@ -215,13 +214,16 @@ class JoyMapper(Node):
         distance = pulse_duration * 17150
         distance = round(distance, 2)
 
-        if distance < 10:
-            print('obstacle detected in {} cm'.format(distance))
+        if distance < 30:
+            if self.obstacle_flag:
+                self.get_logger().info('Obstacle detected in {} cm.'.format(distance))
+                self.obstacle_flag = False
             if car_cmd_msg.v > 0:
-                print('Stop')
                 car_cmd_msg.v = 0.
         else:
-            print('no obstacle {}'.format(distance))
+            if not self.obstacle_flag:
+                self.get_logger().info('Safe now. No obstacles ahead.')
+                self.obstacle_flag = True
 
         return car_cmd_msg
 
