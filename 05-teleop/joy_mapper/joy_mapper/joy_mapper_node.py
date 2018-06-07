@@ -95,17 +95,7 @@ class JoyMapper(Node):
         car_cmd_msg.v = self.joy.axes[1] * self.v_gain
 
         if self.args.use_cliff_detection:
-            is_cliff_detected = GPIO.input(OUT)
-            if is_cliff_detected:
-                if self.cliff_flag:
-                    self.get_logger().info('Cliff detected ahead!')
-                    self.cliff_flag = False
-                if car_cmd_msg.v > 0:
-                    car_cmd_msg.v = 0.
-            else:
-                if not self.cliff_flag:
-                    self.get_logger().info('Safe now. No cliff ahead.')
-                    self.cliff_flag = True
+            car_cmd_msg = self.cliff_detection_handler(car_cmd_msg)
 
         if self.bicycle_kinematics:
             steering_angle = self.joy.axes[3] * self.steer_angle_gain
@@ -115,7 +105,6 @@ class JoyMapper(Node):
         self.pub_car_cmd.publish(car_cmd_msg)
 
     def processButtons(self, joy_msg):
-
         if (joy_msg.buttons[6] == 1): #The back button
             override_msg = BoolStamped()
             override_msg.header.stamp = self.joy.header.stamp
@@ -166,6 +155,21 @@ class JoyMapper(Node):
 
     def loginfo(self, s):
         self.get_logger().info('%s' % (s))      
+
+    def cliff_detection_handler(self, car_cmd_msg):
+        is_cliff_detected = GPIO.input(OUT)
+        if is_cliff_detected:
+            if self.cliff_flag:
+                self.get_logger().info('Cliff detected ahead!')
+                self.cliff_flag = False
+            if car_cmd_msg.v > 0:
+                car_cmd_msg.v = 0.
+        else:
+            if not self.cliff_flag:
+                self.get_logger().info('Safe now. No cliff ahead.')
+                self.cliff_flag = True
+
+        return car_cmd_msg
 
 
 def main(args=None):
