@@ -26,7 +26,9 @@ setup(
         'console_scripts': [
             'joystick-demo = duckietown_demos_launch.joystick_launch:main',
             'lane-following-demo = duckietown_demos_launch.lane_following_launch:main',
-            'lane-following-demo-sim = duckietown_demos_launch.lane_following_simulator_launch:main'
+            'lane-following-demo-sim = duckietown_demos_launch.lane_following_simulator_launch:main',
+            'sensor-detection-demo = duckietown_demos_launch.sensor_detection_launch:main',
+            'obstacle-joy-demo = duckietown_demos_launch.obstacle_joystick_launch:main',
         ],
     },
 )
