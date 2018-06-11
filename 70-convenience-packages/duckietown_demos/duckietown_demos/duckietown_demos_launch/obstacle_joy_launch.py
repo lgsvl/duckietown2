@@ -32,6 +32,8 @@ def launch(launch_descriptor, argv):
         'object_topic': '/object_classifier/output',
         'verbose': 'True',
         'min_score_threshold': '0.5',
+        'use_cliff_detection': '1',
+        'use_obstacle_detection': '1'
     }
 
     if argv:
@@ -42,11 +44,17 @@ def launch(launch_descriptor, argv):
 
     nodes = [
         ('joy', 'joy_node', True),
-        ('joy_mapper', 'joy_mapper_node', True),
+        ('joy_mapper', 'joy_mapper_node', True,
+            '--use_cliff_detection', arg_map['use_cliff_detection'],
+            '--use_obstacle_detection', arg_map['use_obstacle_detection']),
         ('dagu_car', 'wheels_driver_node', True),
         ('dagu_car', 'inverse_kinematics_node', True),
         ('pi_camera', 'camera_node_sequence', True),
-        ("object_classifier", "object_classification_node", True, "--camera_topic", arg_map["camera_topic"], "--object_topic", arg_map["object_topic"], "--verbose", arg_map["verbose"], "--min_score_threshold", arg_map["min_score_threshold"]) 
+        ("object_classifier", "object_classification_node", True,
+            "--camera_topic", arg_map["camera_topic"],
+            "--object_topic", arg_map["object_topic"],
+            "--verbose", arg_map["verbose"],
+            "--min_score_threshold", arg_map["min_score_threshold"])
     ]
 
     for node in nodes:
