@@ -21,8 +21,8 @@ import rclpy
 from rclpy.node import Node
 
 from builtin_interfaces.msg import Time
-from sensor_msgs.msg import Joy
-from duckietown_msgs.msg import Twist2DStamped, BoolStamped    
+from sensor_msgs.msg import Joy, Range
+from duckietown_msgs.msg import Twist2DStamped, BoolStamped
 
 import RPi.GPIO as GPIO
 
@@ -30,6 +30,10 @@ import RPi.GPIO as GPIO
 OUT = 18  # GPIO pin number for IR sensor out signal
 TRIG = 23  # GPIO pin number for Ultrasonic sensor trig signal
 ECHO = 24  # GPIO pin number for Ultrasonic sensor echo signal
+
+ULTRASOUND = 0    # type of radiation sensor, ultrasonic distance
+INFRARED = 1      # type of radiation sensor, IR binary distance
+ULTRASOUND_DETECTION_THRESHOLD = 30 # distance threshold (cm) to register obstacle
 
 
 class JoyMapper(Node):
@@ -63,13 +67,13 @@ class JoyMapper(Node):
         self.last_pub_time = Time()
         self.last_pub_time.sec = int(current_time)
         self.last_pub_time.nanosec = int(current_time%1 * 1E9)
-        
+
         self.v_gain = 0.41
         self.omega_gain = 8.3
         self.bicycle_kinematics = False
         self.steer_angle_gain = 1
-        self.simulated_vehicle_length = 0.18        
-    
+        self.simulated_vehicle_length = 0.18
+
         self.sub = self.create_subscription(Joy, 'joy', self.cbJoy)
 
         car_cmd_topic = "car_cmd"
@@ -83,7 +87,9 @@ class JoyMapper(Node):
         self.pub_anti_instagram = self.create_publisher(BoolStamped, "anti_instagram_node/click")
         self.pub_e_stop = self.create_publisher(BoolStamped, "wheels_driver_node/emergency_stop")
         self.pub_avoidance = self.create_publisher(BoolStamped, "start_avoidance")
-        
+
+        self.pub_range = self.create_publisher(Range, "sensor_output")
+
         self.has_complained = False
 
         self.state_parallel_autonomy = False
@@ -92,7 +98,7 @@ class JoyMapper(Node):
         pub_msg = BoolStamped()
         pub_msg.data = self.state_parallel_autonomy
         pub_msg.header.stamp = self.last_pub_time
-        self.pub_parallel_autonomy.publish(pub_msg)   
+        self.pub_parallel_autonomy.publish(pub_msg)
 
     def cbJoy(self, joy_msg):
         self.joy = joy_msg
@@ -107,10 +113,12 @@ class JoyMapper(Node):
         car_cmd_msg.v = self.joy.axes[1] * self.v_gain
 
         if self.args.use_cliff_detection:
-            car_cmd_msg = self.cliff_detection_handler(car_cmd_msg)
+            car_cmd_msg, range_msg = self.cliff_detection_handler(car_cmd_msg)
+            self.pub_range.publish(range_msg)
 
         if self.args.use_obstacle_detection:
             car_cmd_msg = self.obstacle_detection_handler(car_cmd_msg)
+            self.pub_range.publish(range_msg)
 
         if self.bicycle_kinematics:
             steering_angle = self.joy.axes[3] * self.steer_angle_gain
@@ -127,14 +135,14 @@ class JoyMapper(Node):
             override_msg.data = True
             self.get_logger().info('override_msg = True')
             self.pub_joy_override.publish(override_msg)
-            
+
         elif (joy_msg.buttons[7] == 1): #the start button
             override_msg = BoolStamped()
             override_msg.header.stamp = self.joy.header.stamp
             override_msg.data = False
             self.get_logger().info('override_msg = False')
             self.pub_joy_override.publish(override_msg)
-            
+
         elif (joy_msg.buttons[5] == 1): # Right back button
             self.state_verbose ^= True
             self.get_logger().info('state_verbose = %s' % self.state_verbose)
@@ -170,13 +178,19 @@ class JoyMapper(Node):
                 self.get_logger().info('No binding for joy_msg.buttons = %s' % str(joy_msg.buttons))
 
     def loginfo(self, s):
-        self.get_logger().info('%s' % (s))      
+        self.get_logger().info('%s' % (s))
 
     def cliff_detection_handler(self, car_cmd_msg):
+        range_msg = Range()
+        range_msg.header = car_cmd_msg.header
+        range_msg.radiation_type = INFRARED
+        range_msg.range = 0.0
+
         is_cliff_detected = GPIO.input(OUT)
         if is_cliff_detected:
             if self.cliff_flag:
                 self.get_logger().info('Cliff detected ahead!')
+                range_msg.range = 1.0
                 self.cliff_flag = False
             if car_cmd_msg.v > 0:
                 car_cmd_msg.v = 0.
@@ -185,11 +199,16 @@ class JoyMapper(Node):
                 self.get_logger().info('Safe now. No cliff ahead.')
                 self.cliff_flag = True
 
-        return car_cmd_msg
+        return car_cmd_msg, range_msg
 
     def obstacle_detection_handler(self, car_cmd_msg):
+        range_msg = Range()
+        range_msg.header = car_cmd_msg.header
+        range_msg.radiation_type = ULTRASOUND
+        range_msg.range = 0.0
+
         if GPIO.input(ECHO) != 0:
-            return car_cmd_msg
+            return car_cmd_msg, range_msg
 
         GPIO.output(TRIG, True)
         time.sleep(0.00001)
@@ -199,33 +218,35 @@ class JoyMapper(Node):
         t0 = time.time()
         while GPIO.input(ECHO) == 0:
             pulse_start = time.time()
-            if pulse_start - t0 > 0.01:
-                return car_cmd_msg
+            if pulse_start - t0 > 0.01:     # timeout
+                return car_cmd_msg, range_msg
 
         while GPIO.input(ECHO) == 1:
             pulse_end = time.time()
             pulse_duration = pulse_end - pulse_start
             if pulse_duration > 0.01:
-                return car_cmd_msg
+                return car_cmd_msg          # timeout
 
         if pulse_duration is None:
-            return car_cmd_msg
+            return car_cmd_msg, range_msg
 
         distance = pulse_duration * 17150
         distance = round(distance, 2)
 
-        if distance < 30:
+        if distance < ULTRASOUND_DETECTION_THRESHOLD:
             if self.obstacle_flag:
                 self.get_logger().info('Obstacle detected in {} cm.'.format(distance))
+                range_msg.range = distance / 100    # distance in m
                 self.obstacle_flag = False
             if car_cmd_msg.v > 0:
                 car_cmd_msg.v = 0.
         else:
             if not self.obstacle_flag:
                 self.get_logger().info('Safe now. No obstacles ahead.')
+                range_msg.range = 0.0
                 self.obstacle_flag = True
 
-        return car_cmd_msg
+        return car_cmd_msg, range_msg
 
 
 def main(args=None):
