@@ -44,9 +44,10 @@ def launch(launch_descriptor, argv):
 
     nodes = [
         ('joy', 'joy_node', True),
-        ('joy_mapper', 'joy_mapper_node', True,
-            '--use_cliff_detection', arg_map['use_cliff_detection'],
-            '--use_obstacle_detection', arg_map['use_obstacle_detection']),
+        ('joy_mapper', 'joy_mapper_node', True),
+        ('obstacle_avoidance', 'range_sensors_node', True,
+            "--use_cliff_detection", arg_map["use_cliff_detection"],
+            "--use_obstacle_detection", arg_map["use_obstacle_detection"]),
         ('dagu_car', 'wheels_driver_node', True),
         ('dagu_car', 'inverse_kinematics_node', True),
         ('pi_camera', 'camera_node_sequence', True),
