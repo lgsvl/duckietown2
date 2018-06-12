@@ -53,6 +53,6 @@ def launch(launch_descriptor, argv):
         # die if required, restart otherwise
         exit_handler=default_exit_handler if required else restart_exit_handler,
     )
-    
+
 
     return ld
