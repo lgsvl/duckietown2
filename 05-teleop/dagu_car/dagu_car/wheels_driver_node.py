@@ -42,7 +42,7 @@ class WheelsDriverNode(Node):
         if self.estop:
             self.driver.setWheelsSpeed(left=0.0,right=0.0)
             return
-        
+
         self.driver.setWheelsSpeed(left=msg.vel_left,right=msg.vel_right)
         # Put the wheel commands in a message and publish
         self.msg_wheels_cmd.header = msg.header
@@ -55,7 +55,7 @@ class WheelsDriverNode(Node):
         self.msg_wheels_cmd.header.stamp = timestamp
         self.msg_wheels_cmd.vel_left = msg.vel_left
         self.msg_wheels_cmd.vel_right = msg.vel_right
-        self.pub_wheels_cmd.publish(self.msg_wheels_cmd) 
+        self.pub_wheels_cmd.publish(self.msg_wheels_cmd)
 
     def cbEStop(self,msg):
         self.estop=not self.estop

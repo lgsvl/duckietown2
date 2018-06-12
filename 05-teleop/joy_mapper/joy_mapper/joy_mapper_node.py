@@ -23,17 +23,7 @@ from rclpy.node import Node
 from builtin_interfaces.msg import Time
 from sensor_msgs.msg import Joy, Range
 from duckietown_msgs.msg import Twist2DStamped, BoolStamped
-
-import RPi.GPIO as GPIO
-
-
-OUT = 18  # GPIO pin number for IR sensor out signal
-TRIG = 23  # GPIO pin number for Ultrasonic sensor trig signal
-ECHO = 24  # GPIO pin number for Ultrasonic sensor echo signal
-
-ULTRASOUND = 0    # type of radiation sensor, ultrasonic distance
-INFRARED = 1      # type of radiation sensor, IR binary distance
-ULTRASOUND_DETECTION_THRESHOLD = 30 # distance threshold (cm) to register obstacle
+from duckietown.duckietown_utils.time import get_current_time_msg
 
 
 class JoyMapper(Node):
@@ -43,30 +33,12 @@ class JoyMapper(Node):
 
         self.args = args
 
-        if args.use_cliff_detection:
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setup(OUT, GPIO.IN)
-            time.sleep(1)
-            self.loginfo('Cliff detection mode is running. Drive safely.')
-
-        if args.use_obstacle_detection:
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setup(TRIG,GPIO.OUT)
-            GPIO.setup(ECHO,GPIO.IN)
-            GPIO.output(TRIG, False)
-            time.sleep(2)
-            self.loginfo('Obstacle detection mode is running. Drive safely.')
-
         self.joy = None
         self.last_pub_msg = None
-        self.cliff_flag = True
-        self.obstacle_flag = True
 
         current_time = time.time()
 
-        self.last_pub_time = Time()
-        self.last_pub_time.sec = int(current_time)
-        self.last_pub_time.nanosec = int(current_time%1 * 1E9)
+        self.last_pub_time = get_current_time_msg()
 
         self.v_gain = 0.41
         self.omega_gain = 8.3
@@ -88,10 +60,6 @@ class JoyMapper(Node):
         self.pub_e_stop = self.create_publisher(BoolStamped, "wheels_driver_node/emergency_stop")
         self.pub_avoidance = self.create_publisher(BoolStamped, "start_avoidance")
 
-        self.pub_range = self.create_publisher(Range, "sensor_output")
-
-        self.has_complained = False
-
         self.state_parallel_autonomy = False
         self.state_verbose = False
 
@@ -111,14 +79,6 @@ class JoyMapper(Node):
         car_cmd_msg = Twist2DStamped()
         car_cmd_msg.header.stamp = self.joy.header.stamp
         car_cmd_msg.v = self.joy.axes[1] * self.v_gain
-
-        if self.args.use_cliff_detection:
-            car_cmd_msg, range_msg = self.cliff_detection_handler(car_cmd_msg)
-            self.pub_range.publish(range_msg)
-
-        if self.args.use_obstacle_detection:
-            car_cmd_msg = self.obstacle_detection_handler(car_cmd_msg)
-            self.pub_range.publish(range_msg)
 
         if self.bicycle_kinematics:
             steering_angle = self.joy.axes[3] * self.steer_angle_gain
@@ -180,74 +140,6 @@ class JoyMapper(Node):
     def loginfo(self, s):
         self.get_logger().info('%s' % (s))
 
-    def cliff_detection_handler(self, car_cmd_msg):
-        range_msg = Range()
-        range_msg.header = car_cmd_msg.header
-        range_msg.radiation_type = INFRARED
-        range_msg.range = 0.0
-
-        is_cliff_detected = GPIO.input(OUT)
-        if is_cliff_detected:
-            if self.cliff_flag:
-                self.get_logger().info('Cliff detected ahead!')
-                range_msg.range = 1.0
-                self.cliff_flag = False
-            if car_cmd_msg.v > 0:
-                car_cmd_msg.v = 0.
-        else:
-            if not self.cliff_flag:
-                self.get_logger().info('Safe now. No cliff ahead.')
-                self.cliff_flag = True
-
-        return car_cmd_msg, range_msg
-
-    def obstacle_detection_handler(self, car_cmd_msg):
-        range_msg = Range()
-        range_msg.header = car_cmd_msg.header
-        range_msg.radiation_type = ULTRASOUND
-        range_msg.range = 0.0
-
-        if GPIO.input(ECHO) != 0:
-            return car_cmd_msg, range_msg
-
-        GPIO.output(TRIG, True)
-        time.sleep(0.00001)
-        GPIO.output(TRIG, False)
-
-        pulse_duration = None
-        t0 = time.time()
-        while GPIO.input(ECHO) == 0:
-            pulse_start = time.time()
-            if pulse_start - t0 > 0.01:     # timeout
-                return car_cmd_msg, range_msg
-
-        while GPIO.input(ECHO) == 1:
-            pulse_end = time.time()
-            pulse_duration = pulse_end - pulse_start
-            if pulse_duration > 0.01:
-                return car_cmd_msg          # timeout
-
-        if pulse_duration is None:
-            return car_cmd_msg, range_msg
-
-        distance = pulse_duration * 17150
-        distance = round(distance, 2)
-
-        if distance < ULTRASOUND_DETECTION_THRESHOLD:
-            if self.obstacle_flag:
-                self.get_logger().info('Obstacle detected in {} cm.'.format(distance))
-                range_msg.range = distance / 100    # distance in m
-                self.obstacle_flag = False
-            if car_cmd_msg.v > 0:
-                car_cmd_msg.v = 0.
-        else:
-            if not self.obstacle_flag:
-                self.get_logger().info('Safe now. No obstacles ahead.')
-                range_msg.range = 0.0
-                self.obstacle_flag = True
-
-        return car_cmd_msg, range_msg
-
 
 def main(args=None):
     if args is None:
@@ -258,12 +150,6 @@ def main(args=None):
     parser.add_argument("--publish_topic",
                         type=str,
                         help="topic name to publish car command on")
-    parser.add_argument("--use_cliff_detection",
-                        type=int,
-                        help="1 if using ir sensor to detect cliff, 0 otherwise")
-    parser.add_argument("--use_obstacle_detection",
-                        type=int,
-                        help="1 if using ultrasonic sensor to detect obstacle, 0 otherwise")
     args = parser.parse_args()
 
     node = JoyMapper(args)
