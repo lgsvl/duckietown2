@@ -17,40 +17,39 @@ from ros2run.api import get_executable_path
 
 
 def get_cmd(package, executable, required, *args):
-    cmd = [get_executable_path(package_name=package, executable_name=executable)]
-    for arg in args:
-        cmd.append(arg)
-
-    return cmd
-
+    return [get_executable_path(package_name=package, executable_name=executable)] + list(args)
 
 def launch(launch_descriptor, argv):
     ld = launch_descriptor
 
     arg_map = {
-        'camera_topic': '/image/compressed',
-        'object_topic': '/object_classifier/output',
-        'verbose': 'True',
-        'min_score_threshold': '0.5',
-        'use_cliff_detection': '1',
-        'use_obstacle_detection': '1'
+        "camera_topic": "/image/compressed",
+        "object_topic": "/object_classifier/output",
+        "sensor_cmd_topic": "/sensor/car_cmd",
+        "verbose": "True",
+        "min_score_threshold": "0.5",
+        "use_cliff_detection": "1",
+        "use_obstacle_detection": "1"
     }
 
     if argv:
         for arg in argv:
-            key, value = arg.split(':=')
+            key, value = arg.split(":=")
             if key in arg_map:
                 arg_map[key] = value
 
     nodes = [
-        ('joy', 'joy_node', True),
-        ('joy_mapper', 'joy_mapper_node', True),
-        ('obstacle_avoidance', 'range_sensors_node', True,
+        ("joy", "joy_node", True),
+        ("joy_mapper", "joy_mapper_node", True),
+        ("obstacle_avoidance", "range_sensors_node", True,
             "--use_cliff_detection", arg_map["use_cliff_detection"],
             "--use_obstacle_detection", arg_map["use_obstacle_detection"]),
-        ('dagu_car', 'wheels_driver_node', True),
-        ('dagu_car', 'inverse_kinematics_node', True),
-        ('pi_camera', 'camera_node_sequence', True),
+        ("obstacle_avoidance", "range_sensors_cmd_switch_node", True,
+            "--publish_topic", arg_map["sensor_cmd_topic"]),
+        ("dagu_car", "wheels_driver_node", True),
+        ("dagu_car", "inverse_kinematics_node", True,
+            "--subscribe_topic", arg_map["sensor_cmd_topic"]),
+        ("pi_camera", "camera_node_sequence", True),
         ("object_classifier", "object_classification_node", True,
             "--camera_topic", arg_map["camera_topic"],
             "--object_topic", arg_map["object_topic"],

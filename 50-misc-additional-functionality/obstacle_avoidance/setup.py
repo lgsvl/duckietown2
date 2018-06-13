@@ -24,7 +24,8 @@ setup(
     test_suite='test',
     entry_points={
         'console_scripts': [
-            'range_sensors_node = obstacle_avoidance.range_sensors_node:main'
+            'range_sensors_node = obstacle_avoidance.range_sensors_node:main',
+            'range_sensors_cmd_switch_node = obstacle_avoidance.range_sensors_cmd_switch_node:main'
         ],
     },
 )

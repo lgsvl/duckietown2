@@ -60,10 +60,10 @@ class WheelsDriverNode(Node):
     def cbEStop(self,msg):
         self.estop=not self.estop
         if self.estop:
-            self.get_logger().info("[%s] Emergency Stop Activated")
+            self.get_logger().info("Emergency Stop Activated")
             self.driver.setWheelsSpeed(left=0.0,right=0.0)
         else:
-            self.get_logger().info("[%s] Emergency Stop Released")
+            self.get_logger().info("Emergency Stop Released")
 
     def destroy_node(self):
         self.get_logger().info("Shutting down motors")
