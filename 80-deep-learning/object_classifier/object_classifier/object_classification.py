@@ -27,6 +27,7 @@ class object_classifier(Node):
 
         self.sub_image = self.create_subscription(CompressedImage, '/image/compressed', self.call_back)
         self.pub_obj = self.create_publisher(ClassifiedObject, '/object_classifier/output')
+        self.pub_all_obj = self.create_publisher(ClassifiedObject, '/object_classifier/output_all')
 
         self.verbose = self.args.verbose 
         self.min_score_threshold = self.args.min_score_threshold
@@ -89,14 +90,16 @@ class object_classifier(Node):
         if self.verbose == 'True' or self.verbose == 'true':
             print(detected_obj)
 
+        output = ClassifiedObject()
+        output.header.stamp = data.header.stamp
+        output.label = detected_obj['label']
+        output.index = int(detected_obj['index'])
+        output.score = float(detected_obj['score'])
+        self.pub_all_obj.publish(output)
+
         if detected_obj['score'] > self.min_score_threshold:
             if self.prev_category != detected_obj['label']:
                 self.prev_category = detected_obj['label']
-                output = ClassifiedObject()
-                output.header.stamp = data.header.stamp
-                output.label = detected_obj['label']
-                output.index = int(detected_obj['index'])
-                output.score = float(detected_obj['score'])
                 self.pub_obj.publish(output)
                 print('Message published: {}, {:.1f}%, index {}'.format(detected_obj['label'], detected_obj['score'] * 100, detected_obj['index']))
 
