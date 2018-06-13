@@ -5,9 +5,9 @@
   <description>The line detector package for Duckietown2.</description>
   <maintainer email="brian.shin@lge.com">Brian Shin</maintainer>
 
-  <license>BSD</license>
+  <license>GPLv2</license>
 
-  <url type="website">http://wiki.ros.org/teleop_twist_joy</url>
+  <url type="website">https://github.com/duckietown/Software/tree/master/catkin_ws/src/10-lane-control/line_detector</url>
   <author email="brian.shin@lge.com">Brian Shin</author>
 
   <depend>rclpy</depend>
@@ -16,8 +16,6 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>visualization_msgs</depend>
-
-    
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

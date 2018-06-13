@@ -5,9 +5,9 @@
   <description>The duckietown package for duckietown2. Includes duckietown_utils, helper functions used by various packages.</description>
   <maintainer email="brian.shin@lge.com">Brian Shin</maintainer>
 
-  <license>BSD</license>
+  <license>GPLv2</license>
 
-  <url type="website">http://wiki.ros.org/teleop_twist_joy</url>
+  <url type="website">https://github.com/duckietown/Software/tree/master/catkin_ws/src/00-infrastructure/duckietown</url>
   <author email="brian.shin@lge.com">Brian Shin</author>
 
   <exec_depend>rclpy</exec_depend>

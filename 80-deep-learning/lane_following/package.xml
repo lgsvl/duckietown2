@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>The deep learning lane following package</description>
 
-  <license>TODO</license>
+  <license>GPLv2</license>
 
   <maintainer email="david.uhm@lge.com">David Uhm</maintainer>
   <author email="david.uhm@lge.com">David Uhm</author>

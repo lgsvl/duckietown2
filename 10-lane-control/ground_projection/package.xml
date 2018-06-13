@@ -5,11 +5,10 @@
   <description>The ground projection package for Duckietown2.</description>
   <maintainer email="brian.shin@lge.com">Brian Shin</maintainer>
 
-  <license>BSD</license>
+  <license>GPLv2</license>
 
-  <url type="website">http://wiki.ros.org/teleop_twist_joy</url>
-  <author email="brian.shin@lge.com">Brian Shin</author>
-  
+  <url type="website">https://github.com/duckietown/Software/tree/master/catkin_ws/src/10-lane-control/ground_projection</url>
+
   <depend>image_geometry</depend>
 
   <exec_depend>rclpy</exec_depend>
