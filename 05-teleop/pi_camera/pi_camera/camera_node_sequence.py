@@ -14,6 +14,10 @@ from sensor_msgs.srv import SetCameraInfo
 #from duckietown_utils import get_duckiefleet_root
 from duckietown_msgs.msg import BoolStamped
 
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
+import threading
+
 def timeStamp():
     current_time = time.time()
 
@@ -22,6 +26,47 @@ def timeStamp():
     t.nanosec = int(current_time%1 * 1E9)
 
     return t
+
+class WebHandler(BaseHTTPRequestHandler):
+  def do_GET(self):
+    boundary = "--boundarydonotcross"
+    self.send_response(200)
+    self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0")
+    self.send_header("Connection", "close")
+    self.send_header("Content-Type", "multipart/x-mixed-replace;boundary=%s" % boundary)
+    self.send_header("Expires", "Mon, 3 Jan 2000 12:34:56 GMT")
+    self.send_header("Pragma", "no-cache")
+    self.end_headers()
+    try:
+      while True:
+        self.server.camera.lock.acquire()
+        self.server.camera.cv.wait()
+        image = self.server.camera.image
+        self.server.camera.lock.release()
+
+        self.wfile.write(bytes(boundary, "utf-8"))
+        self.end_headers()
+
+        self.send_header("X-Timestamp", time.time())
+        self.send_header("Content-Length", len(image))
+        self.send_header("Content-Type", "image/jpeg")
+        self.end_headers()
+
+        self.wfile.write(image)
+        self.end_headers()
+    except:
+      pass
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+  pass
+
+def web_serve(camera):
+  try:
+    httpd = ThreadedHTTPServer(('', 8001), WebHandler)
+    httpd.camera = camera
+    httpd.serve_forever()
+  except:
+    pass
 
 
 class CameraNode(Node):
@@ -41,6 +86,11 @@ class CameraNode(Node):
         self.simulator = False # rospy.get_param("~use_simulator_cam")
 
         self.image_msg = CompressedImage()
+
+        self.lock = threading.Lock()
+        self.cv = threading.Condition(self.lock)
+
+        thread.start_new_thread(web_serve, (self,))
 
         # Setup PiCamera
 
@@ -115,6 +165,11 @@ class CameraNode(Node):
             image_msg.format = "jpeg"
             
             image_msg.data = stream_data
+
+            self.lock.acquire()
+            self.image = stream_data
+            self.cv.notify_all()
+            self.lock.release()
 
             #image_msg.data = []
             #open("/dev/shm/a.jpg", "wb").write(bytes(stream_data))
