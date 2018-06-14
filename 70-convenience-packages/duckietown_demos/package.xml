@@ -5,7 +5,7 @@
   <description>The duckietown_demos package for duckietown. Contains launch files to run various demos.</description>
   <maintainer email="brian.shin@lge.com">Brian Shin</maintainer>
 
-  <license>GPLv2</license>
+  <license>Apache Version 2.0</license>
 
   <exec_depend>launch</exec_depend>
 

@@ -5,7 +5,7 @@
   <description>The obstacle avoidance package for duckietown2. Use range sensors to detect and avoid obstacles</description>
   <maintainer email="brian.shin@lge.com">Brian Shin</maintainer>
 
-  <license>GPLv2</license>
+  <license>Apache Version 2.0</license>
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
