@@ -5,7 +5,7 @@
   <description>Camera package for duckietown2.</description>
   <maintainer email="brian.shin@lge.com">Brian Shin</maintainer>
 
-  <license>Apache Version 2.0</license>
+  <license>GPLv3</license>
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>

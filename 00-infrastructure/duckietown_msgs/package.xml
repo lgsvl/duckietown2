@@ -5,7 +5,7 @@
   <version>0.4.0</version>
   <description>A package containing message and service definitions custom for Duckietown 2.</description>
   <maintainer email="brian.shin@lge.com">Brian Shin</maintainer>
-  <license>Apache Version 2.0</license>
+  <license>GPLv3</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
