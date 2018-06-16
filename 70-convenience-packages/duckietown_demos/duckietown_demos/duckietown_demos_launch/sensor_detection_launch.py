@@ -1,4 +1,4 @@
-# Copyright 2016 Open Source Robotics Foundation, Inc.
+# Copyright (c) 2018 LG Electronics, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ def get_cmd(package, executable, required, *args):
         cmd.append(arg)
 
     return cmd
-
 
 def launch(launch_descriptor, argv):
     ld = launch_descriptor

@@ -1,5 +1,3 @@
-# Copyright (c) 2018 LG Electronics, Inc.
-#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use
 # this file except in compliance with the License. You may obtain a copy of the
 # License at
@@ -45,7 +43,7 @@ class GroundProjection():
         # Load checkerboard information
         #self.board_ = self.load_board_info()
 
-    # wait until we have recieved the camera info message through ROS and then initialize
+    # wait until we have received the camera info message through ROS and then initialize
     def initialize_pinhole_camera_model(self,camera_info):
         self.ci_=camera_info
         self.pcm_.fromCameraInfo(camera_info)
@@ -72,7 +70,7 @@ class GroundProjection():
     def vector2ground(self, vec):
         pixel = self.vector2pixel(vec)
         return self.pixel2ground(pixel)
-
+mgr
     def ground2vector(self, point):
         pixel = self.ground2pixel(point)
         return self.pixel2vector(pixel)
