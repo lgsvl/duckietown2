@@ -75,8 +75,11 @@ class RangeSensors(Node):
         pub.publish(range_msg)
 
     def cliff_detection_handler(self):
-        is_cliff_detected = GPIO.input(OUT)
-        self.publishRange(self.pub_infrared, INFRARED, 1.0 if is_cliff_detected else 0.0)
+        something_is_close = GPIO.input(OUT)
+
+        # 0 means no cliff
+        # 1 means there is a cliff
+        self.publishRange(self.pub_infrared, INFRARED, 0.0 if something_is_close else 1.0)
 
     def get_ultrasound_distance(self):
         if GPIO.input(ECHO) != 0:
