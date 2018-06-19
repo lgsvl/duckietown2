@@ -51,11 +51,18 @@ class WebHandler(BaseHTTPRequestHandler):
     self.send_header("Pragma", "no-cache")
     self.end_headers()
     try:
+      min_interval = 0.5 # seconds
+      last = time.time()
       while True:
         self.server.camera.lock.acquire()
         self.server.camera.cv.wait()
         image = self.server.camera.image
         self.server.camera.lock.release()
+
+        now = time.time()
+        if now - last < min_interval:
+          continue
+        last = now
 
         self.wfile.write(bytes(boundary, "utf-8"))
         self.end_headers()
