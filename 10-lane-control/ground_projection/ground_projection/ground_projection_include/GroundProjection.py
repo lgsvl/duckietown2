@@ -70,7 +70,7 @@ class GroundProjection():
     def vector2ground(self, vec):
         pixel = self.vector2pixel(vec)
         return self.pixel2ground(pixel)
-mgr
+
     def ground2vector(self, point):
         pixel = self.ground2pixel(point)
         return self.pixel2vector(pixel)
