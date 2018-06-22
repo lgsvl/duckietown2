@@ -121,11 +121,11 @@ class JoyMapper(Node):
             self.get_logger().info('anti_instagram message')
             self.pub_anti_instagram.publish(anti_instagram_msg)
         elif (joy_msg.buttons[8] == 1): #power button (middle)
-            e_stop_msg = BoolStamped()
-            e_stop_msg.header.stamp = self.joy.header.stamp
-            e_stop_msg.data = True # note that this is toggle (actual value doesn't matter)
-            self.get_logger().info('E-stop message')
-            self.pub_e_stop.publish(e_stop_msg)
+            #e_stop_msg = BoolStamped()
+            #e_stop_msg.header.stamp = self.joy.header.stamp
+            #e_stop_msg.data = True # note that this is toggle (actual value doesn't matter)
+            #self.get_logger().info('E-stop message')
+            #self.pub_e_stop.publish(e_stop_msg)
         elif (joy_msg.buttons[9] == 1): #push left joystick button
             avoidance_msg = BoolStamped()
             self.get_logger().info('start lane following with avoidance mode')

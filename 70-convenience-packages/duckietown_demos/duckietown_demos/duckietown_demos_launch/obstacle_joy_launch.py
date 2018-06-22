@@ -26,7 +26,7 @@ def launch(launch_descriptor, argv):
         "camera_topic": "/image/compressed",
         "object_topic": "/object_classifier/output",
         "sensor_cmd_topic": "/sensor/car_cmd",
-        "verbose": "True",
+        "verbose": "False",
         "min_score_threshold": "0.5",
         "use_cliff_detection": "1",
         "use_obstacle_detection": "1"
