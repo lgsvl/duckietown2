@@ -120,7 +120,7 @@ class JoyMapper(Node):
             anti_instagram_msg.data = True
             self.get_logger().info('anti_instagram message')
             self.pub_anti_instagram.publish(anti_instagram_msg)
-        elif (joy_msg.buttons[8] == 1): #power button (middle)
+        #elif (joy_msg.buttons[8] == 1): #power button (middle)
             #e_stop_msg = BoolStamped()
             #e_stop_msg.header.stamp = self.joy.header.stamp
             #e_stop_msg.data = True # note that this is toggle (actual value doesn't matter)
