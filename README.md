@@ -20,7 +20,8 @@ How to run
 ```
 $ export PYTHONUNBUFFERED=1
 $ export PYTHONOPTIMIZE=2
-$ launch `ros2 pkg prefix duckietown_demos`/lib/python3.5/site-packages/duckietown_demos/duckietown_demos_launch/lane_following_launch.py
+$ export AMENT_PREFIX_PATH=/usr
+$ launch /usr/lib/python3.5/site-packages/duckietown_demos/duckietown_demos_launch/lane_following_launch.py
 ```
 This will launch all necessary nodes for indefinite lane following.
 
