@@ -67,21 +67,29 @@ class object_classifier(Node):
             graph_in_memory = f.read()
 
         self.graph = device.AllocateGraph(graph_in_memory)
-        self.thread_lock = threading.Lock()
+
+        self.image = None
+        self.event = threading.Event()
+        self.thread = threading.Thread(target=self.processImage, daemon=True)
+        self.thread.start()
+
 
     def call_back(self, data):
-        thread = threading.Thread(target=self.processImage, args=(data,))
-        thread.setDaemon(True)
-        thread.start()
-
-    def processImage(self, data):
-        if not self.thread_lock.acquire(False):
+        if self.image is not None:
             return
+        self.image = data
+        self.event.set()
 
-        try:
-            self.processImage_(data)
-        finally:
-            self.thread_lock.release()
+
+    def processImage(self):
+        while True:
+            self.event.wait()
+            self.event.clear()
+            try:
+                self.processImage_(self.image)
+            finally:
+                self.image = None
+
 
     def processImage_(self, data):
         np_arr = np.fromstring(data.data, np.uint8)
