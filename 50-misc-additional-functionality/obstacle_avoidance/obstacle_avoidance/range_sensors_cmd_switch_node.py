@@ -21,6 +21,7 @@ from sensor_msgs.msg import Range
 from duckietown_msgs.msg import Twist2DStamped, BoolStamped
 
 ULTRASOUND_DETECTION_THRESHOLD = 30 # distance threshold (cm) to register obstacle
+CLIFF_DIST_THRESHOLD = 75           # distance threshold (mm) for cliff detection
 
 class RangeSensorCmdSwitchNode(Node):
     def __init__(self, args):
@@ -35,7 +36,7 @@ class RangeSensorCmdSwitchNode(Node):
         self.pub_obstacle = self.create_publisher(BoolStamped, "/obstacle")
 
         self.sub_ultrasound = self.create_subscription(Range, "/sensor/ultrasound", self.cb_ultrasound)
-        self.sub_infrared = self.create_subscription(Range, "/sensor/infrared", self.cb_infrared)
+        self.sub_tof = self.create_subscription(Range, "/sensor/tof", self.cb_tof)
 
         self.sub_joy_cmd = self.create_subscription(Twist2DStamped, self.args.subscribe_topic, self.joy_cmd_callback)
 
@@ -45,14 +46,14 @@ class RangeSensorCmdSwitchNode(Node):
         msg.data = detected
         self.pub_obstacle.publish(msg)
 
-    def cb_infrared(self, msg):
-        is_cliff_detected = msg.range == 0.0
-        if is_cliff_detected:
+    def cb_tof(self, msg):
+        is_cliff_detected = msg.range >= CLIFF_DIST_THRESHOLD
+        if is_cliff_detected:   # cliff detected
             if not self.cliff_detected:
                 self.loginfo('Cliff detected ahead!')
                 if not self.obstacle_detected:
                     self.send_obstacle(msg.header.stamp, True)
-        else:
+        else:                   # no cliff detected
             if self.cliff_detected:
                 self.loginfo('Safe now. No cliff ahead.')
                 if not self.obstacle_detected:
