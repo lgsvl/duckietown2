@@ -23,10 +23,11 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 
-from duckietown_msgs.msg import WheelsCmdStamped, Twist2DStamped    
+from duckietown_msgs.msg import WheelsCmdStamped, Twist2DStamped
 from duckietown_msgs.srv import SetValue
 from std_srvs.srv import Empty
 
+WHEEL_GAIN = 0.6
 
 class InverseKinematicsNode(Node):
     def __init__(self, args):
@@ -39,8 +40,8 @@ class InverseKinematicsNode(Node):
         self.omega_gain = 8.3
         self.bicycle_kinematics = False
         self.steer_angle_gain = 1
-        self.simulated_vehicle_length = 0.18        
-   
+        self.simulated_vehicle_length = 0.18
+
         self.gain = 0.65
         self.trim = 0.0
         self.baseline = 0.1
@@ -50,13 +51,13 @@ class InverseKinematicsNode(Node):
         self.limit_max = 1.0
         self.limit_min = 0.0
 
-        self.srv_set_gain = self.create_service(SetValue, 'set_gain', self.cbSrvSetGain)   
-        self.srv_set_trim = self.create_service(SetValue, 'set_trim', self.cbSrvSetTrim)   
-        self.srv_set_baseline = self.create_service(SetValue, 'set_baseline', self.cbSrvSetBaseline)   
-        self.srv_set_radius = self.create_service(SetValue, 'set_radius', self.cbSrvSetRadius)   
-        self.srv_set_k = self.create_service(SetValue, 'set_trim', self.cbSrvSetTrim)   
-        self.srv_set_limit = self.create_service(SetValue, 'set_trim', self.cbSrvSetTrim)   
-        #self.srv_save = self.create_service(Empty, 'save_calibration', self.cbSrvSaveCalibration)   
+        self.srv_set_gain = self.create_service(SetValue, 'set_gain', self.cbSrvSetGain)
+        self.srv_set_trim = self.create_service(SetValue, 'set_trim', self.cbSrvSetTrim)
+        self.srv_set_baseline = self.create_service(SetValue, 'set_baseline', self.cbSrvSetBaseline)
+        self.srv_set_radius = self.create_service(SetValue, 'set_radius', self.cbSrvSetRadius)
+        self.srv_set_k = self.create_service(SetValue, 'set_trim', self.cbSrvSetTrim)
+        self.srv_set_limit = self.create_service(SetValue, 'set_trim', self.cbSrvSetTrim)
+        #self.srv_save = self.create_service(Empty, 'save_calibration', self.cbSrvSaveCalibration)
 
         self.sub_car_cmd = self.create_subscription(Twist2DStamped, self.args.subscribe_topic, self.car_cmd_callback)
         self.pub_wheels_cmd = self.create_publisher(WheelsCmdStamped, self.args.publish_topic)
@@ -97,22 +98,22 @@ class InverseKinematicsNode(Node):
         self.trim = req.value
         self.printValues()
         return SetValueResponse()
-    
+
     def cbSrvSetBaseline(self, req):
         self.baseline = req.value
         self.printValues()
         return SetValueResponse()
-    
+
     def cbSrvSetRadius(self, req):
         self.radius = req.value
         self.printValues()
         return SetValueResponse()
-    
+
     def cbSrvSetK(self, req):
         self.k = req.value
         self.printValues()
         return SetValueResponse()
-    
+
     def cbSrvSetLimit(self, req):
         self.limit = self.setLimit(req.value)
         self.printValues()
@@ -141,7 +142,7 @@ class InverseKinematicsNode(Node):
 
         omega_r = (msg_car_cmd.v + 0.5 * msg_car_cmd.omega * self.baseline) / self.radius
         omega_l = (msg_car_cmd.v - 0.5 * msg_car_cmd.omega * self.baseline) / self.radius
-        
+
         # conversion from motor rotation rate to duty cycle
         # u_r = (gain + trim) (v + 0.5 * omega * b) / (r * k_r)
         u_r = omega_r * k_r_inv
@@ -153,20 +154,12 @@ class InverseKinematicsNode(Node):
         # Put the wheel commands in a message and publish
         msg_wheels_cmd = WheelsCmdStamped()
         msg_wheels_cmd.header.stamp = msg_car_cmd.header.stamp
-        msg_wheels_cmd.vel_right = u_r_limited
-        msg_wheels_cmd.vel_left = u_l_limited
+        msg_wheels_cmd.vel_right = u_r_limited * WHEEL_GAIN
+        msg_wheels_cmd.vel_left = u_l_limited * WHEEL_GAIN
         self.pub_wheels_cmd.publish(msg_wheels_cmd)
-       
-        # measure delay 
-        #current_time = time.time()
-        #message_time = msg_wheels_cmd.header.stamp.sec + msg_wheels_cmd.header.stamp.nanosec*1e-9
-        #delay = current_time - message_time
-        #print("wheels_cmd timestamp: " + str(msg_wheels_cmd.header.stamp))
-        #print("current time: " + str(current_time))
-        #print("delay: " + str(delay))
 
     def loginfo(self, s):
-        self.get_logger().info('%s' % (s))           
+        self.get_logger().info('%s' % (s))
 
 
 def main(args=None):
