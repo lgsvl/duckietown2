@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not use
 # this file except in compliance with the License. You may obtain a copy of the
 # License at
-#
+
 #    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software distributed
@@ -11,6 +11,7 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
+import time
 import sys
 import argparse
 
@@ -21,6 +22,7 @@ from sensor_msgs.msg import Range
 from duckietown_msgs.msg import Twist2DStamped, BoolStamped
 
 ULTRASOUND_DETECTION_THRESHOLD = 30 # distance threshold (cm) to register obstacle
+OBSTACLE_TIME_THRESHOLD = 0.5		# time in seconds of hysteresis wait time
 CLIFF_DIST_THRESHOLD = 75           # distance threshold (mm) for cliff detection
 
 class RangeSensorCmdSwitchNode(Node):
@@ -31,6 +33,10 @@ class RangeSensorCmdSwitchNode(Node):
         self.args = args
         self.cliff_detected = False
         self.obstacle_detected = False
+        self.ob_predicted_state = False
+        self.ob_waiting_flag = False
+        self.ob_time_start = time.time()
+
 
         self.pub_cmd = self.create_publisher(Twist2DStamped, self.args.publish_topic)
         self.pub_obstacle = self.create_publisher(BoolStamped, "/obstacle")
@@ -62,6 +68,7 @@ class RangeSensorCmdSwitchNode(Node):
 
     def cb_ultrasound(self, msg):
         distance = msg.range
+        """
         if distance < ULTRASOUND_DETECTION_THRESHOLD:
             if not self.obstacle_detected:
                 self.loginfo('Obstacle detected in {} m.'.format(distance))
@@ -74,6 +81,25 @@ class RangeSensorCmdSwitchNode(Node):
                     self.send_obstacle(msg.header.stamp, False)
 
         self.obstacle_detected = distance < ULTRASOUND_DETECTION_THRESHOLD
+        """
+        obstacle_detected = distance < ULTRASOUND_DETECTION_THRESHOLD
+        current_time = time.time()
+        if obstacle_detected != self.obstacle_detected:
+            self.ob_predicted_state = obstacle_detected
+            if self.ob_waiting_flag == True:
+                if current_time - self.ob_time_start > OBSTACLE_TIME_THRESHOLD:
+                    self.loginfo('Obstacle status change detected. Obstacle detected: {}'.format(obstacle_detected))
+                    self.send_obstacle(msg.header.stamp, obstacle_detected)
+                    self.obstacle_detected = self.ob_predicted_state
+                    self.ob_waiting_flag = False
+            else:       # first time seeing change from sensor
+                self.loginfo('Ultrasound detected change, waiting to stabilize')
+                self.ob_waiting_flag = True
+                self.ob_time_start = time.time()
+        else:   # no change, or false alarm
+            #self.loginfo('No change detected, or false alarm, going back to resting state')
+            self.ob_waiting_flag = False
+            self.ob_predicted_state = self.obstacle_detected
 
     def joy_cmd_callback(self, msg):
         if self.cliff_detected or self.obstacle_detected:

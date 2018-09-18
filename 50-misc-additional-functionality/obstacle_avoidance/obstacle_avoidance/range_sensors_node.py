@@ -91,7 +91,7 @@ class RangeSensors(Node):
             self.loginfo('Something is wrong with the TOF sensor')
             print(e)
             return False, -float("Inf")
-            
+
     def cliff_detection_handler(self):
         if self.tof_sensor_online:
             tof_valid, cliff_distance = self.get_tof_distance()
@@ -154,7 +154,7 @@ class RangeSensors(Node):
             i2c = busio.I2C(board.SCL, board.SDA)
             self.tof_sensor = adafruit_vl6180x.VL6180X(i2c)
             self.tof_sensor_online = True
-        except ValueError as e:
+        except (ValueError, OSError) as e:
             self.loginfo('Could not connect to TOF sensor')
             print(e)
             self.tof_sensor_online = False
