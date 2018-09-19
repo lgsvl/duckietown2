@@ -21,8 +21,8 @@ from rclpy.node import Node
 from sensor_msgs.msg import Range
 from duckietown_msgs.msg import Twist2DStamped, BoolStamped
 
-ULTRASOUND_DETECTION_THRESHOLD = 30 # distance threshold (cm) to register obstacle
-OBSTACLE_TIME_THRESHOLD = 0.5		# time in seconds of hysteresis wait time
+ULTRASOUND_DETECTION_THRESHOLD = 20 # distance threshold (cm) to register obstacle
+OBSTACLE_TIME_THRESHOLD = 0.3       # time in seconds of hysteresis wait time
 CLIFF_DIST_THRESHOLD = 75           # distance threshold (mm) for cliff detection
 
 class RangeSensorCmdSwitchNode(Node):

@@ -27,7 +27,7 @@ from duckietown_msgs.msg import WheelsCmdStamped, Twist2DStamped
 from duckietown_msgs.srv import SetValue
 from std_srvs.srv import Empty
 
-WHEEL_GAIN = 0.6
+WHEEL_GAIN = 0.5
 
 class InverseKinematicsNode(Node):
     def __init__(self, args):
