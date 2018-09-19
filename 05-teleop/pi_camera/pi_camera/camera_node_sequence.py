@@ -99,7 +99,7 @@ class CameraNode(Node):
         self.log.info("Initializing......")
 
         # TODO:ROSv2: hardcoded values
-        self.framerate_high = 30.0 # self.setupParam("~framerate_high",30.0)
+        self.framerate_high = 5.0 # self.setupParam("~framerate_high",30.0)
         self.framerate_low = 15.0 # self.setupParam("~framerate_low",15.0)
         self.res_w = 640 # self.setupParam("~res_w",640)
         self.res_h = 480 # self.setupParam("~res_h",480)
